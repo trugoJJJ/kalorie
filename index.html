@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
   :root {
     --bg: #EDF4EC;
@@ -123,6 +124,11 @@
     cursor: pointer;
   }
   .cal-nav button:active { background: #d4e3d3; }
+  .cal-nav button.accent {
+    background: var(--accent);
+    color: white;
+  }
+  .cal-nav button.accent:active { background: #258a4b; }
   .cal-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -319,6 +325,135 @@
     min-width: 0;
   }
   .search-field input::placeholder { color: var(--subtle); }
+  .scan-btn {
+    border: none;
+    background: var(--accent);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 2px;
+  }
+  .scan-btn:active { background: #258a4b; }
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .filter-chip {
+    background: var(--chip);
+    border: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .filter-chip.on {
+    background: var(--accent);
+    color: white;
+  }
+  .filter-chip .lidl-mark {
+    background: #FFE100;
+    color: #0050AA;
+    font-weight: 800;
+    font-size: 9px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+  }
+  .filter-chip.on .lidl-mark { background: white; }
+
+  /* ===== SCANNER MODAL ===== */
+  .scanner-overlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 200;
+    display: none;
+    flex-direction: column;
+  }
+  .scanner-overlay.show { display: flex; }
+  .scanner-head {
+    color: white;
+    padding: 18px 20px;
+    padding-top: max(18px, calc(env(safe-area-inset-top) + 8px));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0,0,0,0.4);
+    z-index: 2;
+  }
+  .scanner-head h2 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .scanner-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #scannerReader {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+  #scannerReader video { width: 100% !important; height: 100% !important; object-fit: cover; }
+  .scanner-hint {
+    color: white;
+    text-align: center;
+    padding: 16px 20px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    background: rgba(0,0,0,0.4);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .scanner-status {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--cta);
+    font-weight: 600;
+  }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    transform: translateX(-50%) translateY(120%);
+    background: var(--text);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    z-index: 300;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 90vw;
+    text-align: center;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--accent); }
   .search-clear {
     background: var(--chip);
     border: none;
@@ -684,6 +819,9 @@
         <span class="year" id="calYear"></span>
       </div>
       <div class="cal-nav">
+        <button id="exportCsvBtn" class="accent" aria-label="Eksport CSV" title="Eksport CSV">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
         <button id="prevMonth" aria-label="Poprzedni miesiąc">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
@@ -767,6 +905,15 @@
           <button class="search-clear" id="searchClear" aria-label="Wyczyść">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
           </button>
+          <button class="scan-btn" id="scanBtn" aria-label="Skanuj kod kreskowy" title="Skanuj kod">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1"/><line x1="7" y1="9" x2="7" y2="15"/><line x1="10" y1="9" x2="10" y2="15"/><line x1="13" y1="9" x2="13" y2="15"/><line x1="17" y1="9" x2="17" y2="15"/></svg>
+          </button>
+        </div>
+        <div class="filter-row">
+          <button class="filter-chip" id="lidlChip" title="Tylko marki własne Lidla">
+            <span class="lidl-mark">LIDL</span>
+            Tylko Lidl
+          </button>
         </div>
         <div class="search-hint" id="searchHint">Podpowiedzi</div>
         <div class="results" id="results"></div>
@@ -817,8 +964,28 @@
   </div>
 </div>
 
+<!-- SCANNER -->
+<div class="scanner-overlay" id="scannerOverlay">
+  <div class="scanner-head">
+    <h2>Skanuj kod kreskowy</h2>
+    <button class="scanner-close" id="scannerClose" aria-label="Zamknij">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div id="scannerReader"></div>
+  <div class="scanner-hint">
+    Nakieruj aparat na kod kreskowy EAN produktu
+    <div class="scanner-status" id="scannerStatus"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
 <script>
 const STORAGE_KEY = 'kalkulator-kalorii-data';
+const EXPORT_KEY = 'kalkulator-kalorii-last-export';
+const LIDL_BRANDS = ['Pilos','Pikok','Combino','Milbona','Vitafit','Italiamo','Sondey','Dulano','Freeway','Belbake','Fin Carré','Bluedino','Crusti Croc','Chef Select','Alesto','Bellarom','Argus','Bon Gelati','Lupilu','Crownfield','Realdo','Mister Choc','Naturis','Floralys'];
 const MONTHS = ['styczeń','luty','marzec','kwiecień','maj','czerwiec','lipiec','sierpień','wrzesień','październik','listopad','grudzień'];
 const WEEKDAYS = ['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
 
@@ -844,6 +1011,9 @@ const state = {
   calYear: new Date().getFullYear(),
   selectedProduct: null,
   selectedMeal: 'inne',
+  lidlOnly: false,
+  scanner: null,
+  lastSearchQuery: '',
 };
 
 const $ = (id) => document.getElementById(id);
@@ -1041,17 +1211,213 @@ function renderDay() {
 // === WYSZUKIWANIE ===
 let searchTimer;
 async function searchProducts(query) {
+  state.lastSearchQuery = query;
   $('searchHint').classList.add('show');
-  $('searchHint').textContent = 'Wyszukiwanie...';
+  $('searchHint').textContent = state.lidlOnly ? 'Wyszukiwanie w Lidlu...' : 'Wyszukiwanie...';
   $('results').innerHTML = '<div class="loader"><div class="spinner"></div>Szukam...</div>';
   try {
-    const url = `https://pl.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=20&fields=code,product_name,product_name_pl,brands,nutriments`;
+    let url;
+    if (state.lidlOnly) {
+      // Filtruj po markach własnych Lidla — używamy parametru brands_tags
+      const brands = LIDL_BRANDS.join(',');
+      url = `https://pl.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=30&tagtype_0=brands&tag_contains_0=contains&tag_0=${encodeURIComponent(brands)}&fields=code,product_name,product_name_pl,brands,nutriments`;
+    } else {
+      url = `https://pl.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=20&fields=code,product_name,product_name_pl,brands,nutriments`;
+    }
     const res = await fetch(url);
     const json = await res.json();
-    renderResults(json.products || []);
+    let products = json.products || [];
+    // Dodatkowe filtrowanie po stronie klienta dla pewności (OFF czasem zwraca inne marki)
+    if (state.lidlOnly) {
+      products = products.filter(p => {
+        if (!p.brands) return false;
+        const brandsLower = p.brands.toLowerCase();
+        return LIDL_BRANDS.some(b => brandsLower.includes(b.toLowerCase()));
+      });
+    }
+    renderResults(products);
   } catch (e) {
     $('results').innerHTML = '<div class="empty-meal">Błąd. Sprawdź połączenie.</div>';
     $('searchHint').classList.remove('show');
+  }
+}
+
+// === SKANER KODÓW KRESKOWYCH ===
+async function lookupBarcode(code) {
+  toast('Szukam produktu po kodzie...');
+  try {
+    const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=code,product_name,product_name_pl,brands,nutriments`;
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.status === 1 && json.product) {
+      const name = json.product.product_name_pl || json.product.product_name;
+      if (!name) {
+        toast('Produkt znaleziony, ale brak nazwy', 'error');
+        return;
+      }
+      const n = json.product.nutriments || {};
+      if (!n['energy-kcal_100g'] && !n.energy_100g) {
+        toast('Produkt nie ma danych odżywczych', 'error');
+        return;
+      }
+      openSheet(json.product);
+    } else {
+      toast('Nie znaleziono produktu o tym kodzie', 'error');
+    }
+  } catch (e) {
+    toast('Błąd pobierania produktu', 'error');
+  }
+}
+
+async function openScanner() {
+  if (typeof Html5Qrcode === 'undefined') {
+    toast('Biblioteka skanera nie załadowana', 'error');
+    return;
+  }
+  $('scannerOverlay').classList.add('show');
+  $('scannerStatus').textContent = '';
+  try {
+    state.scanner = new Html5Qrcode('scannerReader');
+    await state.scanner.start(
+      { facingMode: 'environment' },
+      {
+        fps: 10,
+        qrbox: { width: 280, height: 160 },
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+        ],
+      },
+      async (decodedText) => {
+        $('scannerStatus').textContent = `Znaleziono: ${decodedText}`;
+        await closeScanner();
+        lookupBarcode(decodedText);
+      },
+      () => {}
+    );
+  } catch (e) {
+    $('scannerStatus').textContent = '';
+    toast('Nie można uruchomić aparatu: ' + (e.message || e), 'error');
+    $('scannerOverlay').classList.remove('show');
+  }
+}
+
+async function closeScanner() {
+  if (state.scanner) {
+    try {
+      await state.scanner.stop();
+      await state.scanner.clear();
+    } catch (e) {}
+    state.scanner = null;
+  }
+  $('scannerOverlay').classList.remove('show');
+}
+
+// === TOAST ===
+let toastTimer;
+function toast(message, type = '') {
+  clearTimeout(toastTimer);
+  const el = $('toast');
+  el.textContent = message;
+  el.className = 'toast show ' + type;
+  toastTimer = setTimeout(() => {
+    el.classList.remove('show');
+  }, 3000);
+}
+
+// === CSV EXPORT ===
+function csvEscape(v) {
+  if (v == null) return '';
+  const s = String(v);
+  if (/[",\n;]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+
+function buildCsv(dates) {
+  const headers = ['data','posilek','produkt','gramy','kcal','bialko_g','wegle_g','tluszcze_g','blonnik_g'];
+  const lines = [headers.join(',')];
+  const mealLabel = { sniadanie:'Śniadanie', obiad:'Obiad', kolacja:'Kolacja', inne:'Inne' };
+  // Sortuj daty rosnąco
+  const sorted = [...dates].sort();
+  for (const date of sorted) {
+    const items = state.data[date] || [];
+    for (const it of items) {
+      lines.push([
+        date,
+        mealLabel[it.meal] || 'Inne',
+        csvEscape(it.name),
+        Math.round(it.grams),
+        (it.kcal || 0).toFixed(1),
+        (it.protein || 0).toFixed(2),
+        (it.carbs || 0).toFixed(2),
+        (it.fat || 0).toFixed(2),
+        (it.fiber || 0).toFixed(2),
+      ].join(','));
+    }
+  }
+  return lines.join('\n');
+}
+
+function downloadCsv(filename, csv) {
+  // BOM dla Excela żeby polskie znaki działały
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportAllCsv() {
+  const dates = Object.keys(state.data).filter(d => (state.data[d] || []).length > 0);
+  if (!dates.length) {
+    toast('Brak danych do eksportu', 'error');
+    return;
+  }
+  const csv = buildCsv(dates);
+  const today = todayStr();
+  downloadCsv(`kalorie_wszystko_${today}.csv`, csv);
+  toast(`Wyeksportowano ${dates.length} dni`, 'success');
+}
+
+function exportSingleDay(date) {
+  const items = state.data[date] || [];
+  if (!items.length) {
+    toast('Ten dzień nie ma produktów', 'error');
+    return false;
+  }
+  const csv = buildCsv([date]);
+  downloadCsv(`kalorie_${date}.csv`, csv);
+  return true;
+}
+
+function yesterdayStr() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function checkAutoExport() {
+  const today = todayStr();
+  const yesterday = yesterdayStr();
+  const lastExport = localStorage.getItem(EXPORT_KEY);
+  // Eksportuj wczorajszy dzień raz dziennie, gdy:
+  // - jeszcze nie eksportowaliśmy dziś
+  // - wczorajszy dzień ma jakieś dane
+  const items = state.data[yesterday];
+  if (lastExport !== today && items && items.length) {
+    const ok = exportSingleDay(yesterday);
+    if (ok) {
+      localStorage.setItem(EXPORT_KEY, today);
+      setTimeout(() => toast(`Auto-eksport: wczoraj (${items.length} pozycji)`, 'success'), 500);
+    }
   }
 }
 
@@ -1237,9 +1603,28 @@ document.querySelectorAll('#mealPicker button').forEach(btn => {
   });
 });
 
+// CSV export button
+$('exportCsvBtn').addEventListener('click', exportAllCsv);
+
+// Lidl filter chip
+$('lidlChip').addEventListener('click', () => {
+  state.lidlOnly = !state.lidlOnly;
+  $('lidlChip').classList.toggle('on', state.lidlOnly);
+  // Re-search jeśli mamy zapytanie
+  if (state.lastSearchQuery && state.lastSearchQuery.length >= 2) {
+    searchProducts(state.lastSearchQuery);
+  }
+});
+
+// Scanner
+$('scanBtn').addEventListener('click', openScanner);
+$('scannerClose').addEventListener('click', closeScanner);
+
 // === INIT ===
 renderCalendar();
 showView('Calendar');
+// Sprawdź auto-eksport wczorajszego dnia (raz dziennie)
+checkAutoExport();
 </script>
 </body>
 </html>
