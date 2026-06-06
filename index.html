@@ -454,6 +454,256 @@
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
   .toast.success { background: var(--accent); }
+  .toast.error { background: #C53030; }
+
+  /* ===== SCAN FEEDBACK ===== */
+  .scan-feedback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 3;
+    padding: 24px;
+  }
+  .scan-feedback-card {
+    background: white;
+    border-radius: 22px;
+    padding: 22px 24px 20px;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    transform: scale(0.85);
+    opacity: 0;
+    transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), opacity 0.2s;
+    pointer-events: auto;
+    width: 100%;
+    max-width: 340px;
+  }
+  .scan-feedback.show .scan-feedback-card {
+    transform: scale(1);
+    opacity: 1;
+  }
+  .scan-feedback-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    color: white;
+    font-size: 32px;
+    font-weight: 700;
+  }
+  .scan-feedback.success .scan-feedback-icon {
+    background: var(--accent);
+    box-shadow: 0 8px 24px rgba(46,170,92,0.45);
+  }
+  .scan-feedback.error .scan-feedback-icon {
+    background: #DC2626;
+    box-shadow: 0 8px 24px rgba(220,38,38,0.45);
+  }
+  .scan-feedback-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .scan-feedback.success .scan-feedback-title { color: var(--accent); }
+  .scan-feedback.error .scan-feedback-title { color: #B91C1C; }
+  .scan-feedback-text {
+    font-size: 13px;
+    color: var(--subtle);
+    margin-bottom: 14px;
+  }
+  .scan-feedback-text strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .scan-feedback-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .scan-feedback-actions button {
+    flex: 1;
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 11px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .scan-feedback-actions .secondary {
+    background: var(--chip);
+    color: var(--muted);
+  }
+  .scan-feedback-actions .primary {
+    background: var(--accent);
+    color: white;
+  }
+  .scanner-frame {
+    position: absolute;
+    inset: 60px 24px 100px;
+    border: 3px solid rgba(255,255,255,0.35);
+    border-radius: 16px;
+    pointer-events: none;
+    z-index: 1;
+    transition: border-color 0.2s;
+  }
+  .scanner-overlay.flash-success .scanner-frame { border-color: var(--accent); box-shadow: 0 0 0 9999px rgba(46,170,92,0.18) inset; }
+  .scanner-overlay.flash-error .scanner-frame { border-color: #DC2626; box-shadow: 0 0 0 9999px rgba(220,38,38,0.18) inset; }
+
+  /* ===== CUSTOM PRODUCT SHEET ===== */
+  .custom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .custom-grid.full { grid-template-columns: 1fr; }
+  .custom-field { display: flex; flex-direction: column; }
+  .custom-field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+  }
+  .custom-field input {
+    background: var(--bg);
+    border: 1.5px solid var(--hair);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    outline: none;
+    color: var(--text);
+    -webkit-appearance: none;
+    appearance: none;
+    -moz-appearance: textfield;
+    transition: border-color 0.15s;
+  }
+  .custom-field input:focus { border-color: var(--accent); }
+  .custom-field input::-webkit-outer-spin-button,
+  .custom-field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .custom-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    margin: 16px 0 8px;
+  }
+  .custom-section-title small {
+    color: var(--subtle);
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .custom-barcode-note {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .add-custom-chip {
+    background: var(--chip);
+    border: 1.5px dashed var(--subtle);
+    color: var(--muted);
+  }
+  .add-custom-chip:active { background: var(--accent-soft); }
+
+  /* === LIDL TOGGLE W CUSTOM SHEET === */
+  .lidl-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--bg);
+    border: 1.5px solid var(--hair);
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .lidl-toggle.on {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .lidl-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .lidl-toggle .lidl-mark-big {
+    background: #FFE100;
+    color: #0050AA;
+    font-weight: 800;
+    font-size: 11px;
+    padding: 3px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+  .lidl-toggle-sub {
+    font-size: 11px;
+    color: var(--subtle);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .switch {
+    position: relative;
+    width: 44px;
+    height: 26px;
+    background: var(--chip);
+    border-radius: 999px;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lidl-toggle.on .switch { background: var(--accent); }
+  .lidl-toggle.on .switch::after { transform: translateX(18px); }
+
+  /* === PRODUCT CARD CUSTOM TAG === */
+  .pc-tag {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 5px;
+    margin-right: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+  }
+  .pc-tag.pc-tag-lidl {
+    background: #FFE100;
+    color: #0050AA;
+  }
   .search-clear {
     background: var(--chip);
     border: none;
@@ -527,7 +777,6 @@
     flex-direction: column;
     gap: 14px;
   }
-  .meal-group { }
   .meal-picker {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -914,6 +1163,9 @@
             <span class="lidl-mark">LIDL</span>
             Tylko Lidl
           </button>
+          <button class="filter-chip add-custom-chip" id="addCustomChip" title="Dodaj własny produkt">
+            + Własny produkt
+          </button>
         </div>
         <div class="search-hint" id="searchHint">Podpowiedzi</div>
         <div class="results" id="results"></div>
@@ -973,9 +1225,75 @@
     </button>
   </div>
   <div id="scannerReader"></div>
+  <div class="scanner-frame"></div>
+  <div class="scan-feedback" id="scanFeedback">
+    <div class="scan-feedback-card">
+      <div class="scan-feedback-icon" id="scanFeedbackIcon">✓</div>
+      <div class="scan-feedback-title" id="scanFeedbackTitle">Znaleziono!</div>
+      <div class="scan-feedback-text" id="scanFeedbackText"></div>
+      <div class="scan-feedback-actions" id="scanFeedbackActions"></div>
+    </div>
+  </div>
   <div class="scanner-hint">
     Nakieruj aparat na kod kreskowy EAN produktu
     <div class="scanner-status" id="scannerStatus"></div>
+  </div>
+</div>
+
+<!-- CUSTOM PRODUCT SHEET -->
+<div class="sheet-dim" id="customSheetDim"></div>
+<div class="sheet" id="customSheet">
+  <div class="grab"></div>
+  <div class="s-title" id="customSheetTitle">Dodaj własny produkt</div>
+  <div class="s-sub">Wpisz wartości na 100 g / 100 ml</div>
+  <div id="customBarcodeNote" class="custom-barcode-note" style="display:none;"></div>
+
+  <div class="custom-section-title">Nazwa</div>
+  <div class="custom-grid full">
+    <div class="custom-field">
+      <input type="text" id="customName" placeholder="np. Domowy chleb">
+    </div>
+  </div>
+
+  <div class="custom-section-title">Wartości na 100 g <small>(błonnik opcjonalny)</small></div>
+  <div class="custom-grid">
+    <div class="custom-field">
+      <label>Kalorie (kcal)</label>
+      <input type="number" id="customKcal" inputmode="decimal" step="0.1" min="0">
+    </div>
+    <div class="custom-field">
+      <label>Białko (g)</label>
+      <input type="number" id="customProtein" inputmode="decimal" step="0.1" min="0">
+    </div>
+    <div class="custom-field">
+      <label>Węglowodany (g)</label>
+      <input type="number" id="customCarbs" inputmode="decimal" step="0.1" min="0">
+    </div>
+    <div class="custom-field">
+      <label>Tłuszcze (g)</label>
+      <input type="number" id="customFat" inputmode="decimal" step="0.1" min="0">
+    </div>
+    <div class="custom-field">
+      <label>Błonnik (g)</label>
+      <input type="number" id="customFiber" inputmode="decimal" step="0.1" min="0">
+    </div>
+  </div>
+
+  <div class="custom-section-title">Pochodzenie</div>
+  <div class="lidl-toggle" id="customLidlToggle">
+    <div class="lidl-toggle-label">
+      <span class="lidl-mark-big">LIDL</span>
+      <div>
+        Produkt z Lidla
+        <div class="lidl-toggle-sub">Pojawi się w filtrze „Tylko Lidl"</div>
+      </div>
+    </div>
+    <div class="switch"></div>
+  </div>
+
+  <div class="sheet-actions" style="margin-top: 22px;">
+    <button class="cancel" id="customCancelBtn">Anuluj</button>
+    <button class="confirm" id="customConfirmBtn">Dalej →</button>
   </div>
 </div>
 
@@ -985,6 +1303,7 @@
 <script>
 const STORAGE_KEY = 'kalkulator-kalorii-data';
 const EXPORT_KEY = 'kalkulator-kalorii-last-export';
+const CUSTOM_KEY = 'kalkulator-kalorii-custom-products';
 const LIDL_BRANDS = ['Pilos','Pikok','Combino','Milbona','Vitafit','Italiamo','Sondey','Dulano','Freeway','Belbake','Fin Carré','Bluedino','Crusti Croc','Chef Select','Alesto','Bellarom','Argus','Bon Gelati','Lupilu','Crownfield','Realdo','Mister Choc','Naturis','Floralys'];
 const MONTHS = ['styczeń','luty','marzec','kwiecień','maj','czerwiec','lipiec','sierpień','wrzesień','październik','listopad','grudzień'];
 const WEEKDAYS = ['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
@@ -1006,6 +1325,7 @@ function guessMeal() {
 
 const state = {
   data: JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'),
+  customProducts: JSON.parse(localStorage.getItem(CUSTOM_KEY) || '[]'),
   currentDate: null,
   calMonth: new Date().getMonth(),
   calYear: new Date().getFullYear(),
@@ -1015,6 +1335,8 @@ const state = {
   scanner: null,
   lastSearchQuery: '',
 };
+
+function saveCustom() { localStorage.setItem(CUSTOM_KEY, JSON.stringify(state.customProducts)); }
 
 const $ = (id) => document.getElementById(id);
 const todayStr = () => {
@@ -1235,6 +1557,16 @@ async function searchProducts(query) {
         return LIDL_BRANDS.some(b => brandsLower.includes(b.toLowerCase()));
       });
     }
+    // Dodaj pasujące produkty własne na początek listy
+    // Gdy aktywny Lidl-only — pokaż tylko te oznaczone jako z Lidla
+    const qLower = query.toLowerCase();
+    let customMatches = state.customProducts.filter(p =>
+      (p.product_name_pl || p.product_name || '').toLowerCase().includes(qLower)
+    );
+    if (state.lidlOnly) {
+      customMatches = customMatches.filter(p => p._isLidl);
+    }
+    products = [...customMatches, ...products];
     renderResults(products);
   } catch (e) {
     $('results').innerHTML = '<div class="empty-meal">Błąd. Sprawdź połączenie.</div>';
@@ -1243,29 +1575,150 @@ async function searchProducts(query) {
 }
 
 // === SKANER KODÓW KRESKOWYCH ===
+function showScanFeedback({ type, title, text, actions = [] }) {
+  const overlay = $('scannerOverlay');
+  const fb = $('scanFeedback');
+  overlay.classList.remove('flash-success','flash-error');
+  fb.classList.remove('success','error');
+  overlay.classList.add('flash-' + type);
+  fb.classList.add(type);
+  $('scanFeedbackIcon').textContent = type === 'success' ? '✓' : '✕';
+  $('scanFeedbackTitle').textContent = title;
+  $('scanFeedbackText').innerHTML = text;
+  const ac = $('scanFeedbackActions');
+  ac.innerHTML = '';
+  actions.forEach(a => {
+    const b = document.createElement('button');
+    b.className = a.kind || 'primary';
+    b.textContent = a.label;
+    b.addEventListener('click', a.onClick);
+    ac.appendChild(b);
+  });
+  fb.classList.add('show');
+}
+
+function hideScanFeedback() {
+  $('scanFeedback').classList.remove('show');
+  $('scannerOverlay').classList.remove('flash-success','flash-error');
+}
+
 async function lookupBarcode(code) {
-  toast('Szukam produktu po kodzie...');
+  showScanFeedback({
+    type: 'success',
+    title: 'Sprawdzam kod...',
+    text: `<strong>${escapeHtml(code)}</strong>`,
+    actions: [],
+  });
+  // override icon to spinner-ish: keep checkmark muted while loading
+  $('scanFeedbackIcon').textContent = '...';
   try {
     const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=code,product_name,product_name_pl,brands,nutriments`;
     const res = await fetch(url);
     const json = await res.json();
-    if (json.status === 1 && json.product) {
-      const name = json.product.product_name_pl || json.product.product_name;
-      if (!name) {
-        toast('Produkt znaleziony, ale brak nazwy', 'error');
-        return;
-      }
-      const n = json.product.nutriments || {};
-      if (!n['energy-kcal_100g'] && !n.energy_100g) {
-        toast('Produkt nie ma danych odżywczych', 'error');
-        return;
-      }
-      openSheet(json.product);
+    const name = json.product && (json.product.product_name_pl || json.product.product_name);
+    const n = (json.product && json.product.nutriments) || {};
+    const hasKcal = n['energy-kcal_100g'] || n.energy_100g;
+    if (json.status === 1 && json.product && name && hasKcal) {
+      // Success — pokaż przez 900ms, potem otwórz sheet
+      showScanFeedback({
+        type: 'success',
+        title: 'Znaleziono!',
+        text: `<strong>${escapeHtml(name)}</strong>`,
+        actions: [],
+      });
+      setTimeout(async () => {
+        await closeScanner();
+        openSheet(json.product);
+      }, 900);
     } else {
-      toast('Nie znaleziono produktu o tym kodzie', 'error');
+      // Brak produktu lub brak danych
+      const reason = !json.product || json.status !== 1
+        ? 'Nie ma go w bazie OpenFoodFacts'
+        : (!name ? 'Brak nazwy produktu' : 'Brak danych odżywczych');
+      showScanFeedback({
+        type: 'error',
+        title: 'Brak produktu w bazie',
+        text: `${reason}<br>Kod: <strong>${escapeHtml(code)}</strong>`,
+        actions: [
+          {
+            kind: 'secondary',
+            label: 'Skanuj ponownie',
+            onClick: async () => {
+              hideScanFeedback();
+              await restartScanner();
+            },
+          },
+          {
+            kind: 'primary',
+            label: 'Dodaj ręcznie',
+            onClick: async () => {
+              await closeScanner();
+              openCustomSheet({ barcode: code });
+            },
+          },
+        ],
+      });
     }
   } catch (e) {
-    toast('Błąd pobierania produktu', 'error');
+    showScanFeedback({
+      type: 'error',
+      title: 'Błąd sieci',
+      text: 'Nie udało się pobrać produktu',
+      actions: [
+        {
+          kind: 'secondary',
+          label: 'Zamknij',
+          onClick: closeScanner,
+        },
+        {
+          kind: 'primary',
+          label: 'Dodaj ręcznie',
+          onClick: async () => {
+            await closeScanner();
+            openCustomSheet({ barcode: code });
+          },
+        },
+      ],
+    });
+  }
+}
+
+async function startScannerCamera() {
+  state.scanner = new Html5Qrcode('scannerReader');
+  await state.scanner.start(
+    { facingMode: 'environment' },
+    {
+      fps: 10,
+      qrbox: { width: 280, height: 160 },
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+      ],
+    },
+    async (decodedText) => {
+      // Zatrzymaj kamerę, ale nie zamykaj overlay — chcemy pokazać feedback
+      if (state.scanner) {
+        try { await state.scanner.stop(); } catch (e) {}
+      }
+      lookupBarcode(decodedText);
+    },
+    () => {}
+  );
+}
+
+async function restartScanner() {
+  if (state.scanner) {
+    try { await state.scanner.stop(); await state.scanner.clear(); } catch (e) {}
+    state.scanner = null;
+  }
+  try {
+    await startScannerCamera();
+  } catch (e) {
+    toast('Nie można uruchomić aparatu', 'error');
   }
 }
 
@@ -1276,31 +1729,10 @@ async function openScanner() {
   }
   $('scannerOverlay').classList.add('show');
   $('scannerStatus').textContent = '';
+  hideScanFeedback();
   try {
-    state.scanner = new Html5Qrcode('scannerReader');
-    await state.scanner.start(
-      { facingMode: 'environment' },
-      {
-        fps: 10,
-        qrbox: { width: 280, height: 160 },
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.UPC_A,
-          Html5QrcodeSupportedFormats.UPC_E,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.CODE_39,
-        ],
-      },
-      async (decodedText) => {
-        $('scannerStatus').textContent = `Znaleziono: ${decodedText}`;
-        await closeScanner();
-        lookupBarcode(decodedText);
-      },
-      () => {}
-    );
+    await startScannerCamera();
   } catch (e) {
-    $('scannerStatus').textContent = '';
     toast('Nie można uruchomić aparatu: ' + (e.message || e), 'error');
     $('scannerOverlay').classList.remove('show');
   }
@@ -1314,7 +1746,72 @@ async function closeScanner() {
     } catch (e) {}
     state.scanner = null;
   }
+  hideScanFeedback();
   $('scannerOverlay').classList.remove('show');
+}
+
+// === CUSTOM PRODUCT SHEET ===
+function openCustomSheet({ barcode = null, prefillName = '' } = {}) {
+  $('customName').value = prefillName;
+  $('customKcal').value = '';
+  $('customProtein').value = '';
+  $('customCarbs').value = '';
+  $('customFat').value = '';
+  $('customFiber').value = '';
+  $('customLidlToggle').classList.remove('on');
+  const note = $('customBarcodeNote');
+  if (barcode) {
+    note.style.display = 'block';
+    note.textContent = `Kod produktu: ${barcode}`;
+    note.dataset.barcode = barcode;
+  } else {
+    note.style.display = 'none';
+    delete note.dataset.barcode;
+  }
+  $('customSheetDim').classList.add('show');
+  requestAnimationFrame(() => $('customSheet').classList.add('show'));
+  setTimeout(() => $('customName').focus(), 280);
+}
+
+function closeCustomSheet() {
+  $('customSheet').classList.remove('show');
+  setTimeout(() => $('customSheetDim').classList.remove('show'), 250);
+}
+
+function saveCustomProduct() {
+  const name = $('customName').value.trim();
+  const kcal = parseFloat($('customKcal').value);
+  const protein = parseFloat($('customProtein').value) || 0;
+  const carbs = parseFloat($('customCarbs').value) || 0;
+  const fat = parseFloat($('customFat').value) || 0;
+  const fiber = parseFloat($('customFiber').value) || 0;
+  if (!name) { toast('Wpisz nazwę produktu', 'error'); $('customName').focus(); return; }
+  if (!kcal || kcal < 0) { toast('Wpisz kalorie (kcal)', 'error'); $('customKcal').focus(); return; }
+
+  const barcode = $('customBarcodeNote').dataset.barcode;
+  const isLidl = $('customLidlToggle').classList.contains('on');
+  const product = {
+    code: barcode || ('custom_' + Date.now()),
+    product_name: name,
+    product_name_pl: name,
+    brands: isLidl ? 'Lidl (własny)' : 'Własne',
+    _custom: true,
+    _isLidl: isLidl,
+    nutriments: {
+      'energy-kcal_100g': kcal,
+      proteins_100g: protein,
+      carbohydrates_100g: carbs,
+      fat_100g: fat,
+      fiber_100g: fiber,
+    },
+  };
+  // Zapisz do bazy własnych produktów (do reuse w przyszłości)
+  state.customProducts.push(product);
+  saveCustom();
+  closeCustomSheet();
+  // Otwórz standardowy sheet do wpisania gramatury i posiłku
+  setTimeout(() => openSheet(product), 280);
+  toast('Dodano do biblioteki własnych produktów', 'success');
 }
 
 // === TOAST ===
@@ -1438,10 +1935,13 @@ function renderResults(products) {
     const brand = p.brands ? p.brands.split(',')[0] : '';
     const n = p.nutriments || {};
     const kcal = Math.round(n['energy-kcal_100g'] || (n.energy_100g ? n.energy_100g / 4.184 : 0));
+    const customTag = p._custom ? '<span class="pc-tag">Własny</span>' : '';
+    const lidlTag = p._isLidl ? '<span class="pc-tag pc-tag-lidl">LIDL</span>' : '';
+    const tag = customTag + lidlTag;
     return `
       <div class="prod-card" data-idx="${i}">
         <div class="pc-info">
-          <div class="pc-name">${escapeHtml(name)}</div>
+          <div class="pc-name">${tag}${escapeHtml(name)}</div>
           <div class="pc-meta">${kcal} kcal / 100 g${brand ? ' · ' + escapeHtml(brand) : ''}</div>
         </div>
         <span class="pc-add">
@@ -1619,6 +2119,17 @@ $('lidlChip').addEventListener('click', () => {
 // Scanner
 $('scanBtn').addEventListener('click', openScanner);
 $('scannerClose').addEventListener('click', closeScanner);
+
+// Custom product
+$('addCustomChip').addEventListener('click', () => {
+  openCustomSheet({ prefillName: state.lastSearchQuery || '' });
+});
+$('customConfirmBtn').addEventListener('click', saveCustomProduct);
+$('customLidlToggle').addEventListener('click', () => {
+  $('customLidlToggle').classList.toggle('on');
+});
+$('customCancelBtn').addEventListener('click', closeCustomSheet);
+$('customSheetDim').addEventListener('click', closeCustomSheet);
 
 // === INIT ===
 renderCalendar();
