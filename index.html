@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#EDF4EC">
-<title>Rozpierdolnik</title>
+<title>Kalkulator Kalorii</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1315,6 +1315,172 @@
     color: var(--subtle);
     padding: 14px 0;
   }
+
+  /* === RECIPE SHEET === */
+  .recipe-ingredients {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .ri-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 9px 12px;
+  }
+  .ri-info { flex: 1; min-width: 0; }
+  .ri-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ri-meta {
+    font-size: 11px;
+    color: var(--subtle);
+    margin-top: 1px;
+  }
+  .ri-kcal {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .ri-rm {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--subtle);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ri-rm:hover, .ri-rm:active { background: var(--rm-bg); color: var(--rm-fg); }
+  .recipe-totals {
+    background: var(--accent-soft);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    text-align: center;
+  }
+  .recipe-empty {
+    text-align: center;
+    font-size: 12px;
+    color: var(--subtle);
+    padding: 14px 8px;
+    background: var(--bg);
+    border-radius: 10px;
+  }
+  textarea#recipeDesc {
+    resize: vertical;
+    min-height: 64px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 100%;
+    line-height: 1.4;
+  }
+
+  /* === INGREDIENT PICKER OVERLAY === */
+  .picker-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(11,13,20,0.5);
+    z-index: 9000;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .picker-overlay.show { display: flex; }
+  .picker-sheet {
+    background: var(--surface);
+    width: 100%;
+    max-width: 480px;
+    max-height: 80vh;
+    border-radius: 24px 24px 0 0;
+    padding: 14px 18px 20px;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+  .picker-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .picker-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .picker-close {
+    width: 30px; height: 30px; border-radius: 8px; border: none;
+    background: var(--chip); color: var(--muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .picker-search {
+    background: var(--bg);
+    border: 1.5px solid var(--hair);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    margin-bottom: 8px;
+    width: 100%;
+  }
+  .picker-search:focus { border-color: var(--accent); }
+  .picker-list {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .pl-item {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.12s;
+  }
+  .pl-item:hover, .pl-item:active { background: var(--accent-soft); }
+  .pl-name {
+    flex: 1;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pl-meta {
+    font-size: 11px;
+    color: var(--subtle);
+    flex-shrink: 0;
+  }
+  .pl-empty { text-align: center; color: var(--subtle); font-size: 12px; padding: 20px; }
+
+  /* === RECIPE BADGE === */
+  .pc-tag.pc-tag-recipe {
+    background: #FFF1D7;
+    color: #B66A00;
+  }
+  .add-recipe-chip {
+    background: var(--accent-soft) !important;
+    color: var(--accent) !important;
+    border: 1.5px dashed var(--accent) !important;
+  }
 </style>
 </head>
 <body>
@@ -1334,6 +1500,10 @@
         <button id="exportWoCsvBtn" class="accent" aria-label="Eksport treningów CSV" title="Eksport treningów CSV">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h2v14H6zM16 5h2v14h-2zM4 9h2v6H4zM18 9h2v6h-2zM8 12h8"/></svg>
         </button>
+        <button id="importCsvBtn" class="accent" aria-label="Import CSV" title="Import CSV">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </button>
+        <input type="file" id="csvFileInput" accept=".csv,text/csv" multiple style="display:none;">
         <button id="prevMonth" aria-label="Poprzedni miesiąc">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
@@ -1428,6 +1598,9 @@
           </button>
           <button class="filter-chip add-custom-chip" id="addCustomChip" title="Dodaj własny produkt">
             + Własny produkt
+          </button>
+          <button class="filter-chip add-recipe-chip" id="addRecipeChip" title="Stwórz obiad/przepis">
+            + Obiad/Przepis
           </button>
         </div>
         <div class="search-hint" id="searchHint">Podpowiedzi</div>
@@ -1584,6 +1757,78 @@
   </div>
 </div>
 
+<!-- RECIPE SHEET -->
+<div class="sheet-dim" id="recipeSheetDim"></div>
+<div class="sheet" id="recipeSheet">
+  <div class="grab"></div>
+  <div class="s-title" id="recipeSheetTitle">Nowy obiad / przepis</div>
+  <div class="s-sub">Złóż obiad z dodanych składników — następnym razem wyszukasz go po nazwie</div>
+
+  <div class="custom-section-title">Nazwa</div>
+  <div class="custom-grid full">
+    <div class="custom-field">
+      <input type="text" id="recipeName" placeholder="np. Kurczak z ryżem">
+    </div>
+  </div>
+
+  <div class="custom-section-title">Opis / przygotowanie <small>(opcjonalne)</small></div>
+  <div class="custom-grid full">
+    <div class="custom-field">
+      <textarea id="recipeDesc" placeholder="Jak przygotować ten obiad..." rows="3"></textarea>
+    </div>
+  </div>
+
+  <div class="custom-section-title">Składniki <small id="recipeCountLabel"></small></div>
+  <div id="recipeIngredients" class="recipe-ingredients"></div>
+  <button class="wo-add" id="recipeAddIngredient" style="margin-top:8px;">+ Dodaj składnik</button>
+
+  <div class="custom-section-title">Suma</div>
+  <div id="recipeTotals" class="recipe-totals">0 kcal · B 0 g · W 0 g · T 0 g</div>
+
+  <div class="sheet-actions" style="margin-top: 18px;">
+    <button class="cancel" id="recipeCancelBtn">Anuluj</button>
+    <button class="confirm" id="recipeSaveBtn">Zapisz przepis</button>
+  </div>
+</div>
+
+<!-- INGREDIENT PICKER -->
+<div class="picker-overlay" id="ingredientPicker">
+  <div class="picker-sheet">
+    <div class="picker-head">
+      <div class="picker-title">Wybierz składnik</div>
+      <button class="picker-close" id="ingredientPickerClose" aria-label="Zamknij">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <input type="text" class="picker-search" id="ingredientPickerSearch" placeholder="Szukaj wśród Twoich produktów...">
+    <div class="picker-list" id="ingredientPickerList"></div>
+  </div>
+</div>
+
+<!-- RECIPE-TO-DAY PICKER -->
+<div class="picker-overlay" id="recipeToDayPicker">
+  <div class="picker-sheet">
+    <div class="picker-head">
+      <div class="picker-title" id="recipeToDayTitle">Dodaj przepis do dnia</div>
+      <button class="picker-close" id="recipeToDayClose" aria-label="Zamknij">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div id="recipeToDayContent" style="overflow-y:auto; flex:1;"></div>
+    <div class="field-lbl" style="margin-top:10px;">Posiłek</div>
+    <div class="meal-picker" id="recipeMealPicker">
+      <button data-meal="sniadanie">Śniadanie</button>
+      <button data-meal="obiad" class="on">Obiad</button>
+      <button data-meal="kolacja">Kolacja</button>
+      <button data-meal="inne">Inne</button>
+    </div>
+    <div class="sheet-actions" style="margin-top: 12px;">
+      <button class="cancel" id="recipeToDayCancel">Anuluj</button>
+      <button class="confirm" id="recipeToDayConfirm">Dodaj do dnia</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -1593,6 +1838,7 @@ const EXPORT_KEY = 'kalkulator-kalorii-last-export';
 const WO_EXPORT_KEY = 'kalkulator-kalorii-last-wo-export';
 const CUSTOM_KEY = 'kalkulator-kalorii-custom-products';
 const WORKOUT_KEY = 'kalkulator-kalorii-workouts';
+const RECIPES_KEY = 'kalkulator-kalorii-recipes';
 
 const WORKOUT_PRESETS = {
   gora: [
@@ -1641,6 +1887,9 @@ const state = {
   data: JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'),
   customProducts: JSON.parse(localStorage.getItem(CUSTOM_KEY) || '[]'),
   workouts: JSON.parse(localStorage.getItem(WORKOUT_KEY) || '{}'),
+  recipes: JSON.parse(localStorage.getItem(RECIPES_KEY) || '[]'),
+  recipeDraft: { id: null, name: '', description: '', ingredients: [] },
+  pendingRecipe: null,
   currentDate: null,
   calMonth: new Date().getMonth(),
   calYear: new Date().getFullYear(),
@@ -1654,6 +1903,7 @@ const state = {
 
 function saveCustom() { localStorage.setItem(CUSTOM_KEY, JSON.stringify(state.customProducts)); }
 function saveWorkouts() { localStorage.setItem(WORKOUT_KEY, JSON.stringify(state.workouts)); }
+function saveRecipes() { localStorage.setItem(RECIPES_KEY, JSON.stringify(state.recipes)); }
 function getWorkout(date) {
   if (!state.workouts[date]) state.workouts[date] = { enabled: false, exercises: [] };
   return state.workouts[date];
@@ -2061,6 +2311,33 @@ function customMatchesFor(query) {
   return matches;
 }
 
+function recipeMatchesFor(query) {
+  const qLower = query.toLowerCase();
+  // Filtr Lidla nie dotyczy przepisów — to są Twoje zestawy
+  if (state.lidlOnly) return [];
+  return state.recipes
+    .filter(r => (r.name || '').toLowerCase().includes(qLower))
+    .map(r => {
+      const t = r.totals || recipeTotalsOf(r);
+      // Pseudo-produkt pasujący do searchowego shape, z _isRecipe i _recipeId
+      return {
+        code: r.id,
+        product_name: r.name,
+        product_name_pl: r.name,
+        brands: `Przepis · ${r.ingredients.length} skł.`,
+        _isRecipe: true,
+        _recipeId: r.id,
+        nutriments: {
+          'energy-kcal_100g': t.kcal, // przybliżenie tylko dla wyświetlenia (cała porcja)
+          proteins_100g: t.protein,
+          carbohydrates_100g: t.carbs,
+          fat_100g: t.fat,
+          fiber_100g: t.fiber,
+        },
+      };
+    });
+}
+
 async function fetchWithTimeout(url, signal, timeoutMs = 9000) {
   const ctrl = new AbortController();
   const onAbort = () => ctrl.abort();
@@ -2077,12 +2354,14 @@ async function fetchWithTimeout(url, signal, timeoutMs = 9000) {
 
 async function searchProducts(query) {
   state.lastSearchQuery = query;
-  // Pokaż własne produkty natychmiast (synchroniczne), żeby UI nie był "martwy"
+  // Pokaż własne produkty + przepisy natychmiast (synchroniczne)
+  const recipes = recipeMatchesFor(query);
   const customs = customMatchesFor(query);
+  const localFirst = [...recipes, ...customs];
   $('searchHint').classList.add('show');
   $('searchHint').textContent = state.lidlOnly ? 'Wyszukiwanie w Lidlu...' : 'Wyszukiwanie...';
-  if (customs.length) {
-    renderResults(customs, { partial: true });
+  if (localFirst.length) {
+    renderResults(localFirst, { partial: true });
   } else {
     $('results').innerHTML = '<div class="loader"><div class="spinner"></div>Szukam...</div>';
   }
@@ -2128,9 +2407,8 @@ async function searchProducts(query) {
 
   if (products === null) {
     // Wszystkie próby padły
-    if (customs.length) {
-      // Pokaż chociaż własne — usuń komunikat „szukam"
-      renderResults(customs, { partial: false, errorNote: 'Bazy OFF nie odpowiadają — pokazuję tylko Twoje produkty.' });
+    if (localFirst.length) {
+      renderResults(localFirst, { partial: false, errorNote: 'Bazy OFF nie odpowiadają — pokazuję tylko Twoje produkty.' });
     } else {
       $('results').innerHTML = '<div class="empty-meal">Bazy OFF nie odpowiadają. Spróbuj za chwilę lub naciśnij Enter.</div>';
       $('searchHint').classList.remove('show');
@@ -2146,8 +2424,8 @@ async function searchProducts(query) {
       return LIDL_BRANDS.some(b => bl.includes(b.toLowerCase()));
     });
   }
-  // Doklej własne na początek
-  const merged = [...customs, ...products];
+  // Doklej przepisy + własne na początek
+  const merged = [...recipes, ...customs, ...products];
   renderResults(merged);
 }
 
@@ -2391,6 +2669,397 @@ function saveCustomProduct() {
   toast('Dodano do biblioteki własnych produktów', 'success');
 }
 
+// === RECIPES / PRZEPISY ===
+function getKnownProducts() {
+  // Zwraca listę unikalnych produktów: customProducts + produkty użyte w dziennikach
+  // Każdy ma znormalizowane wartości na 100 g
+  const map = new Map();
+  // Custom products mają już per_100g
+  for (const p of state.customProducts) {
+    const name = p.product_name_pl || p.product_name;
+    if (!name) continue;
+    const n = p.nutriments || {};
+    map.set(name.toLowerCase(), {
+      source: 'custom',
+      name,
+      brand: p.brands || '',
+      kcal100: n['energy-kcal_100g'] || 0,
+      protein100: n.proteins_100g || 0,
+      carbs100: n.carbohydrates_100g || 0,
+      fat100: n.fat_100g || 0,
+      fiber100: n.fiber_100g || 0,
+      _isLidl: !!p._isLidl,
+    });
+  }
+  // Z dziennika — wsteczna kalkulacja na 100g z item.grams
+  for (const date of Object.keys(state.data)) {
+    const items = state.data[date] || [];
+    for (const it of items) {
+      const key = (it.name || '').toLowerCase();
+      if (!it.name || !it.grams || it.grams <= 0) continue;
+      if (map.has(key)) continue; // pierwszy znaleziony wystarczy
+      const k = 100 / it.grams;
+      map.set(key, {
+        source: 'used',
+        name: it.name,
+        brand: '',
+        kcal100: (it.kcal || 0) * k,
+        protein100: (it.protein || 0) * k,
+        carbs100: (it.carbs || 0) * k,
+        fat100: (it.fat || 0) * k,
+        fiber100: (it.fiber || 0) * k,
+      });
+    }
+  }
+  return Array.from(map.values()).sort((a,b) => a.name.localeCompare(b.name, 'pl'));
+}
+
+function recipeDraftTotals() {
+  return state.recipeDraft.ingredients.reduce((a, it) => ({
+    kcal: a.kcal + (it.kcal || 0),
+    protein: a.protein + (it.protein || 0),
+    carbs: a.carbs + (it.carbs || 0),
+    fat: a.fat + (it.fat || 0),
+    fiber: a.fiber + (it.fiber || 0),
+    grams: a.grams + (it.grams || 0),
+  }), { kcal:0, protein:0, carbs:0, fat:0, fiber:0, grams:0 });
+}
+
+function renderRecipeIngredients() {
+  const list = state.recipeDraft.ingredients;
+  $('recipeCountLabel').textContent = list.length ? `· ${list.length}` : '';
+  const wrap = $('recipeIngredients');
+  if (!list.length) {
+    wrap.innerHTML = '<div class="recipe-empty">Brak składników. Kliknij „+ Dodaj składnik".</div>';
+  } else {
+    wrap.innerHTML = list.map((it, i) => `
+      <div class="ri-row">
+        <div class="ri-info">
+          <div class="ri-name">${escapeHtml(it.name)}</div>
+          <div class="ri-meta">${Math.round(it.grams)} g · B ${(it.protein||0).toFixed(1)} · W ${(it.carbs||0).toFixed(1)} · T ${(it.fat||0).toFixed(1)}</div>
+        </div>
+        <div class="ri-kcal">${Math.round(it.kcal || 0)} kcal</div>
+        <button class="ri-rm" data-i="${i}" aria-label="Usuń">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+    `).join('');
+    wrap.querySelectorAll('button[data-i]').forEach(b => {
+      b.addEventListener('click', () => {
+        list.splice(+b.dataset.i, 1);
+        renderRecipeIngredients();
+      });
+    });
+  }
+  const t = recipeDraftTotals();
+  $('recipeTotals').textContent = `${Math.round(t.kcal)} kcal · B ${t.protein.toFixed(1)} g · W ${t.carbs.toFixed(1)} g · T ${t.fat.toFixed(1)} g · ${Math.round(t.grams)} g razem`;
+}
+
+function openRecipeSheet(editId = null) {
+  if (editId) {
+    const r = state.recipes.find(x => x.id === editId);
+    if (!r) return;
+    state.recipeDraft = { id: r.id, name: r.name, description: r.description || '', ingredients: r.ingredients.map(x => ({ ...x })) };
+    $('recipeSheetTitle').textContent = 'Edytuj przepis';
+  } else {
+    state.recipeDraft = { id: null, name: '', description: '', ingredients: [] };
+    $('recipeSheetTitle').textContent = 'Nowy obiad / przepis';
+  }
+  $('recipeName').value = state.recipeDraft.name;
+  $('recipeDesc').value = state.recipeDraft.description;
+  renderRecipeIngredients();
+  $('recipeSheetDim').classList.add('show');
+  requestAnimationFrame(() => $('recipeSheet').classList.add('show'));
+}
+
+function closeRecipeSheet() {
+  $('recipeSheet').classList.remove('show');
+  setTimeout(() => $('recipeSheetDim').classList.remove('show'), 250);
+}
+
+function saveRecipeDraft() {
+  const name = $('recipeName').value.trim();
+  const desc = $('recipeDesc').value.trim();
+  if (!name) { toast('Wpisz nazwę przepisu', 'error'); $('recipeName').focus(); return; }
+  if (!state.recipeDraft.ingredients.length) { toast('Dodaj przynajmniej jeden składnik', 'error'); return; }
+  const t = recipeDraftTotals();
+  const recipe = {
+    id: state.recipeDraft.id || ('recipe_' + Date.now()),
+    name,
+    description: desc,
+    ingredients: state.recipeDraft.ingredients.map(x => ({ ...x })),
+    totals: t,
+  };
+  if (state.recipeDraft.id) {
+    const idx = state.recipes.findIndex(r => r.id === state.recipeDraft.id);
+    if (idx >= 0) state.recipes[idx] = recipe;
+    else state.recipes.push(recipe);
+  } else {
+    state.recipes.push(recipe);
+  }
+  saveRecipes();
+  closeRecipeSheet();
+  toast('Zapisano przepis', 'success');
+}
+
+// === INGREDIENT PICKER ===
+let currentPickerProducts = [];
+function openIngredientPicker() {
+  currentPickerProducts = getKnownProducts();
+  $('ingredientPickerSearch').value = '';
+  renderIngredientPickerList('');
+  $('ingredientPicker').classList.add('show');
+  setTimeout(() => $('ingredientPickerSearch').focus(), 50);
+}
+function closeIngredientPicker() {
+  $('ingredientPicker').classList.remove('show');
+}
+function renderIngredientPickerList(filter) {
+  const q = (filter || '').trim().toLowerCase();
+  const list = q
+    ? currentPickerProducts.filter(p => p.name.toLowerCase().includes(q))
+    : currentPickerProducts;
+  const el = $('ingredientPickerList');
+  if (!list.length) {
+    el.innerHTML = `<div class="pl-empty">Brak pasujących produktów. Najpierw dodaj produkt do dnia lub stwórz własny.</div>`;
+    return;
+  }
+  el.innerHTML = list.slice(0, 100).map((p, i) => `
+    <div class="pl-item" data-i="${currentPickerProducts.indexOf(p)}">
+      <div class="pl-name">${escapeHtml(p.name)}</div>
+      <div class="pl-meta">${Math.round(p.kcal100)} kcal/100g</div>
+    </div>
+  `).join('');
+  el.querySelectorAll('.pl-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const p = currentPickerProducts[+item.dataset.i];
+      if (!p) return;
+      const gramsStr = prompt(`Ile gramów „${p.name}"?`, '100');
+      if (gramsStr === null) return;
+      const grams = parseFloat(gramsStr.replace(',', '.'));
+      if (!grams || grams <= 0) { toast('Nieprawidłowa gramatura', 'error'); return; }
+      const f = grams / 100;
+      state.recipeDraft.ingredients.push({
+        name: p.name,
+        grams,
+        kcal: p.kcal100 * f,
+        protein: p.protein100 * f,
+        carbs: p.carbs100 * f,
+        fat: p.fat100 * f,
+        fiber: p.fiber100 * f,
+      });
+      renderRecipeIngredients();
+      closeIngredientPicker();
+    });
+  });
+}
+
+// === DODAWANIE PRZEPISU DO DNIA ===
+function openRecipeToDayPicker(recipeId) {
+  const r = state.recipes.find(x => x.id === recipeId);
+  if (!r) return;
+  state.pendingRecipe = r;
+  $('recipeToDayTitle').textContent = r.name;
+  const t = r.totals || recipeTotalsOf(r);
+  const ingredientsHtml = r.ingredients.map(it => `
+    <div class="ri-row">
+      <div class="ri-info">
+        <div class="ri-name">${escapeHtml(it.name)}</div>
+        <div class="ri-meta">${Math.round(it.grams)} g</div>
+      </div>
+      <div class="ri-kcal">${Math.round(it.kcal || 0)} kcal</div>
+    </div>
+  `).join('');
+  const descHtml = r.description
+    ? `<div class="ri-row" style="flex-direction:column; align-items:flex-start; gap:4px; background:var(--accent-soft);">
+         <div class="ri-name" style="white-space:normal; color:var(--accent);">Sposób przygotowania</div>
+         <div style="font-size:12.5px; color:var(--muted); white-space:pre-wrap;">${escapeHtml(r.description)}</div>
+       </div>` : '';
+  $('recipeToDayContent').innerHTML = `
+    <div class="recipe-totals" style="margin-bottom:10px;">${Math.round(t.kcal)} kcal · B ${t.protein.toFixed(1)} g · W ${t.carbs.toFixed(1)} g · T ${t.fat.toFixed(1)} g</div>
+    ${descHtml}
+    <div style="font-size:11px; color:var(--subtle); margin:8px 2px 6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Składniki (${r.ingredients.length})</div>
+    <div class="recipe-ingredients">${ingredientsHtml}</div>
+  `;
+  // Reset meal picker — preferuj „obiad" (przepisy to zwykle obiady)
+  document.querySelectorAll('#recipeMealPicker button').forEach(b => {
+    b.classList.toggle('on', b.dataset.meal === 'obiad');
+  });
+  $('recipeToDayPicker').classList.add('show');
+}
+function closeRecipeToDayPicker() {
+  $('recipeToDayPicker').classList.remove('show');
+  state.pendingRecipe = null;
+}
+function recipeTotalsOf(r) {
+  return r.ingredients.reduce((a, it) => ({
+    kcal: a.kcal + (it.kcal || 0),
+    protein: a.protein + (it.protein || 0),
+    carbs: a.carbs + (it.carbs || 0),
+    fat: a.fat + (it.fat || 0),
+    fiber: a.fiber + (it.fiber || 0),
+  }), { kcal:0, protein:0, carbs:0, fat:0, fiber:0 });
+}
+function confirmRecipeToDay() {
+  const r = state.pendingRecipe;
+  if (!r) return;
+  const mealBtn = document.querySelector('#recipeMealPicker button.on');
+  const meal = mealBtn ? mealBtn.dataset.meal : 'obiad';
+  const items = getDay(state.currentDate);
+  for (const ing of r.ingredients) {
+    items.push({
+      name: ing.name,
+      grams: ing.grams,
+      meal,
+      kcal: ing.kcal || 0,
+      protein: ing.protein || 0,
+      carbs: ing.carbs || 0,
+      fat: ing.fat || 0,
+      fiber: ing.fiber || 0,
+      _fromRecipe: r.id,
+    });
+  }
+  save();
+  closeRecipeToDayPicker();
+  // wyczyść wyszukiwarkę
+  $('searchInput').value = '';
+  $('searchClear').classList.remove('show');
+  $('searchHint').classList.remove('show');
+  $('results').innerHTML = '';
+  renderDay();
+  toast(`Dodano „${r.name}" (${r.ingredients.length} składników)`, 'success');
+}
+
+// === CSV IMPORT ===
+function parseCsv(text) {
+  text = text.replace(/^\ufeff/, '');
+  const rows = [];
+  let row = [], field = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], nc = text[i+1];
+    if (inQ) {
+      if (c === '"' && nc === '"') { field += '"'; i++; }
+      else if (c === '"') inQ = false;
+      else field += c;
+    } else {
+      if (c === '"') inQ = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c === '\r') { /* skip */ }
+      else field += c;
+    }
+  }
+  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.length && r.some(c => c.length));
+}
+
+const MEAL_FROM_LABEL = { 'śniadanie':'sniadanie', 'sniadanie':'sniadanie', 'obiad':'obiad', 'kolacja':'kolacja', 'inne':'inne' };
+
+function importDietRows(rows) {
+  const hdr = rows[0].map(s => s.trim().toLowerCase());
+  const need = ['data','posilek','produkt','gramy','kcal','bialko_g','wegle_g','tluszcze_g','blonnik_g'];
+  const idx = need.map(n => hdr.indexOf(n));
+  if (idx[0] === -1 || idx[2] === -1) {
+    return { error: 'Nieznany format CSV diety' };
+  }
+  let count = 0; const days = new Set();
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const date = (r[idx[0]] || '').trim();
+    const name = (r[idx[2]] || '').trim();
+    if (!date || !name) continue;
+    const mealRaw = (r[idx[1]] || '').trim().toLowerCase();
+    const meal = MEAL_FROM_LABEL[mealRaw] || 'inne';
+    const item = {
+      name,
+      grams: parseFloat((r[idx[3]] || '0').replace(',','.')) || 0,
+      meal,
+      kcal: parseFloat((r[idx[4]] || '0').replace(',','.')) || 0,
+      protein: idx[5] >= 0 ? (parseFloat((r[idx[5]] || '0').replace(',','.')) || 0) : 0,
+      carbs:   idx[6] >= 0 ? (parseFloat((r[idx[6]] || '0').replace(',','.')) || 0) : 0,
+      fat:     idx[7] >= 0 ? (parseFloat((r[idx[7]] || '0').replace(',','.')) || 0) : 0,
+      fiber:   idx[8] >= 0 ? (parseFloat((r[idx[8]] || '0').replace(',','.')) || 0) : 0,
+    };
+    if (!state.data[date]) state.data[date] = [];
+    state.data[date].push(item);
+    count++; days.add(date);
+  }
+  save();
+  return { count, daysCount: days.size, type: 'diet' };
+}
+
+function importWorkoutRows(rows) {
+  const hdr = rows[0].map(s => s.trim().toLowerCase());
+  const need = ['data','cwiczenie','opis','serie','obciazenie'];
+  const idx = need.map(n => hdr.indexOf(n));
+  if (idx[0] === -1 || idx[1] === -1) {
+    return { error: 'Nieznany format CSV treningów' };
+  }
+  let count = 0; const days = new Set();
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const date = (r[idx[0]] || '').trim();
+    const cw = (r[idx[1]] || '').trim();
+    if (!date || !cw) continue;
+    if (!state.workouts[date]) state.workouts[date] = { enabled: true, exercises: [] };
+    else state.workouts[date].enabled = true;
+    state.workouts[date].exercises.push({
+      name: cw,
+      note: idx[2] >= 0 ? (r[idx[2]] || '').trim() : '',
+      sets: idx[3] >= 0 ? (r[idx[3]] || '').trim() : '',
+      weight: idx[4] >= 0 ? (r[idx[4]] || '').trim() : '',
+    });
+    count++; days.add(date);
+  }
+  saveWorkouts();
+  return { count, daysCount: days.size, type: 'workout' };
+}
+
+function importCsvFile(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = String(e.target.result || '');
+        const rows = parseCsv(text);
+        if (!rows.length) return resolve({ error: 'Pusty plik' });
+        const hdr = rows[0].map(s => s.trim().toLowerCase());
+        if (hdr.includes('cwiczenie')) resolve(importWorkoutRows(rows));
+        else if (hdr.includes('produkt') || hdr.includes('posilek')) resolve(importDietRows(rows));
+        else resolve({ error: 'Nieznany nagłówek CSV' });
+      } catch (err) {
+        resolve({ error: 'Błąd parsowania: ' + err.message });
+      }
+    };
+    reader.onerror = () => resolve({ error: 'Nie udało się odczytać pliku' });
+    reader.readAsText(file, 'utf-8');
+  });
+}
+
+async function handleCsvImport(files) {
+  if (!files || !files.length) return;
+  if (!confirm(`Zaimportować ${files.length} plik(ów) CSV?\n\nDane zostaną DODANE do istniejących wpisów (nie nadpiszą).`)) return;
+  let totalDiet = 0, totalWo = 0, daysDiet = new Set(), daysWo = new Set();
+  const errors = [];
+  for (const file of files) {
+    const r = await importCsvFile(file);
+    if (r.error) { errors.push(`${file.name}: ${r.error}`); continue; }
+    if (r.type === 'diet') { totalDiet += r.count; for (const d of (r.days || [])) daysDiet.add(d); }
+    else if (r.type === 'workout') { totalWo += r.count; }
+  }
+  if (totalDiet || totalWo) {
+    if (state.currentDate) renderDay();
+    renderCalendar();
+  }
+  let msg = '';
+  if (totalDiet) msg += `Dieta: +${totalDiet} pozycji. `;
+  if (totalWo) msg += `Trening: +${totalWo} ćwiczeń. `;
+  if (errors.length) msg += `Błędy: ${errors.length}`;
+  if (msg) toast(msg.trim(), errors.length ? 'error' : 'success');
+  else if (errors.length) toast(errors.join('\n'), 'error');
+  else toast('Brak danych do zaimportowania', 'error');
+}
+
 // === TOAST ===
 let toastTimer;
 function toast(message, type = '') {
@@ -2588,12 +3257,16 @@ function renderResults(products, opts = {}) {
     const kcal = Math.round(n['energy-kcal_100g'] || (n.energy_100g ? n.energy_100g / 4.184 : 0));
     const customTag = p._custom ? '<span class="pc-tag">Własny</span>' : '';
     const lidlTag = p._isLidl ? '<span class="pc-tag pc-tag-lidl">LIDL</span>' : '';
-    const tag = customTag + lidlTag;
+    const recipeTag = p._isRecipe ? '<span class="pc-tag pc-tag-recipe">Przepis</span>' : '';
+    const tag = recipeTag + customTag + lidlTag;
+    const metaLine = p._isRecipe
+      ? `${kcal} kcal · cały przepis · ${escapeHtml(brand)}`
+      : `${kcal} kcal / 100 g${brand ? ' · ' + escapeHtml(brand) : ''}`;
     return `
       <div class="prod-card" data-idx="${i}">
         <div class="pc-info">
           <div class="pc-name">${tag}${escapeHtml(name)}</div>
-          <div class="pc-meta">${kcal} kcal / 100 g${brand ? ' · ' + escapeHtml(brand) : ''}</div>
+          <div class="pc-meta">${metaLine}</div>
         </div>
         <span class="pc-add">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -2602,7 +3275,11 @@ function renderResults(products, opts = {}) {
     `;
   }).join('');
   $('results').querySelectorAll('.prod-card').forEach(card => {
-    card.addEventListener('click', () => openSheet(valid[+card.dataset.idx]));
+    card.addEventListener('click', () => {
+      const p = valid[+card.dataset.idx];
+      if (p._isRecipe) openRecipeToDayPicker(p._recipeId);
+      else openSheet(p);
+    });
   });
 }
 
@@ -2783,6 +3460,13 @@ document.querySelectorAll('#mealPicker button').forEach(btn => {
 $('exportCsvBtn').addEventListener('click', exportAllCsv);
 $('exportWoCsvBtn').addEventListener('click', exportAllWorkoutsCsv);
 
+// CSV import
+$('importCsvBtn').addEventListener('click', () => $('csvFileInput').click());
+$('csvFileInput').addEventListener('change', (e) => {
+  handleCsvImport(e.target.files);
+  e.target.value = ''; // reset, żeby ten sam plik dało się ponownie wybrać
+});
+
 // Lidl filter chip
 $('lidlChip').addEventListener('click', () => {
   state.lidlOnly = !state.lidlOnly;
@@ -2807,6 +3491,34 @@ $('customLidlToggle').addEventListener('click', () => {
 });
 $('customCancelBtn').addEventListener('click', closeCustomSheet);
 $('customSheetDim').addEventListener('click', closeCustomSheet);
+
+// Recipe sheet
+$('addRecipeChip').addEventListener('click', () => openRecipeSheet());
+$('recipeCancelBtn').addEventListener('click', closeRecipeSheet);
+$('recipeSheetDim').addEventListener('click', closeRecipeSheet);
+$('recipeSaveBtn').addEventListener('click', saveRecipeDraft);
+$('recipeName').addEventListener('input', (e) => { state.recipeDraft.name = e.target.value; });
+$('recipeDesc').addEventListener('input', (e) => { state.recipeDraft.description = e.target.value; });
+$('recipeAddIngredient').addEventListener('click', openIngredientPicker);
+$('ingredientPickerClose').addEventListener('click', closeIngredientPicker);
+$('ingredientPickerSearch').addEventListener('input', (e) => renderIngredientPickerList(e.target.value));
+$('ingredientPicker').addEventListener('click', (e) => {
+  if (e.target === $('ingredientPicker')) closeIngredientPicker();
+});
+
+// Recipe -> day picker
+$('recipeToDayClose').addEventListener('click', closeRecipeToDayPicker);
+$('recipeToDayCancel').addEventListener('click', closeRecipeToDayPicker);
+$('recipeToDayConfirm').addEventListener('click', confirmRecipeToDay);
+$('recipeToDayPicker').addEventListener('click', (e) => {
+  if (e.target === $('recipeToDayPicker')) closeRecipeToDayPicker();
+});
+document.querySelectorAll('#recipeMealPicker button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#recipeMealPicker button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  });
+});
 
 // Workout
 $('workoutToggle').addEventListener('click', (e) => {
