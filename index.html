@@ -1626,6 +1626,36 @@
   .avg-macro.status-orange .v { color: #C76A1E; }
   .avg-macro.status-green { background: #DCF1E4; }
   .avg-macro.status-green .v { color: #2EAA5C; }
+  /* "Brakuje" hints */
+  .diff-hint {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--subtle);
+    margin-top: 2px;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+  .diff-hint.over { color: #C76A1E; }
+  .diff-hint.done { color: #2EAA5C; }
+  .kcal-diff {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--subtle);
+    margin-top: 6px;
+    letter-spacing: 0.02em;
+  }
+  .kcal-diff.over { color: #C76A1E; }
+  .kcal-diff.done { color: #2EAA5C; }
+  /* Calendar avg "remaining" line */
+  .avg-diff {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--subtle);
+    margin-top: 2px;
+  }
+  .avg-diff.over { color: #C76A1E; }
+  .avg-diff.done { color: #2EAA5C; }
 </style>
 </head>
 <body>
@@ -1645,10 +1675,13 @@
         <button id="exportWoCsvBtn" class="accent" aria-label="Eksport treningów CSV" title="Eksport treningów CSV">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h2v14H6zM16 5h2v14h-2zM4 9h2v6H4zM18 9h2v6h-2zM8 12h8"/></svg>
         </button>
-        <button id="importCsvBtn" class="accent" aria-label="Import CSV" title="Import CSV">
+        <button id="importCsvBtn" class="accent" aria-label="Import CSV / backup" title="Import CSV lub backup JSON">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         </button>
-        <input type="file" id="csvFileInput" accept=".csv,text/csv" multiple style="display:none;">
+        <button id="backupBtn" class="accent" aria-label="Backup wszystkich danych" title="Backup (zapisz pełną kopię)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        </button>
+        <input type="file" id="csvFileInput" accept=".csv,text/csv,.json,application/json" multiple style="display:none;">
         <button id="prevMonth" aria-label="Poprzedni miesiąc">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
@@ -1707,6 +1740,7 @@
         <div>
           <div class="lbl" id="avgLabel">Średnia w miesiącu</div>
           <div class="val"><span id="avgVal">0</span> <small>kcal / dzień</small></div>
+          <div class="avg-diff" id="avgDiff"></div>
         </div>
         <div style="display:flex; gap:5px;">
           <span class="cal-dot" style="background: var(--accent);"></span>
@@ -1718,18 +1752,22 @@
       <div class="avg-macro" id="avgMacroP">
         <div class="v"><span id="avgP">0</span><small> g</small></div>
         <div class="n">Białko</div>
+        <div class="diff-hint" id="avgPDiff"></div>
       </div>
       <div class="avg-macro" id="avgMacroC">
         <div class="v"><span id="avgC">0</span><small> g</small></div>
         <div class="n">Węgle</div>
+        <div class="diff-hint" id="avgCDiff"></div>
       </div>
       <div class="avg-macro" id="avgMacroF">
         <div class="v"><span id="avgF">0</span><small> g</small></div>
         <div class="n">Tłuszcze</div>
+        <div class="diff-hint" id="avgFDiff"></div>
       </div>
       <div class="avg-macro" id="avgMacroFi">
         <div class="v"><span id="avgFi">0</span><small> g</small></div>
         <div class="n">Błonnik</div>
+        <div class="diff-hint" id="avgFiDiff"></div>
       </div>
     </div>
   </div>
@@ -1751,6 +1789,7 @@
       <div class="hero">
         <div class="kcal-big" id="totalCal">0</div>
         <div class="kcal-lbl">kcal spożyte dziś</div>
+        <div class="kcal-diff" id="kcalDiff"></div>
         <div class="macrobar">
           <span id="barP" style="background: var(--mc-protein); width:0%;"></span>
           <span id="barC" style="background: var(--mc-carbs); width:0%;"></span>
@@ -1768,18 +1807,22 @@
         <div class="macro">
           <div class="mv"><span id="mP">0</span><small> g</small></div>
           <div class="mn">Białko</div>
+          <div class="diff-hint" id="mPDiff"></div>
         </div>
         <div class="macro">
           <div class="mv"><span id="mC">0</span><small> g</small></div>
           <div class="mn">Węgle</div>
+          <div class="diff-hint" id="mCDiff"></div>
         </div>
         <div class="macro">
           <div class="mv"><span id="mF">0</span><small> g</small></div>
           <div class="mn">Tłuszcze</div>
+          <div class="diff-hint" id="mFDiff"></div>
         </div>
         <div class="macro">
           <div class="mv"><span id="mFi">0</span><small> g</small></div>
           <div class="mn">Błonnik</div>
+          <div class="diff-hint" id="mFiDiff"></div>
         </div>
       </div>
 
@@ -2120,6 +2163,23 @@ function statusForRatio(actual, target) {
   if (dist <= 0.25) return 'orange';  // within ±25% → getting closer
   return 'red';                        // > ±25% away
 }
+function diffInfo(actual, target, unit) {
+  if (!target || target <= 0) return { text: '', cls: '' };
+  const diff = target - actual;
+  const abs = Math.round(Math.abs(diff));
+  const u = unit || '';
+  if (Math.abs(diff) < (target * 0.02)) return { text: 'cel osiągnięty', cls: 'done' };
+  if (diff > 0) return { text: `brakuje ${fmtNum(abs)} ${u}`.trim(), cls: '' };
+  return { text: `+${fmtNum(abs)} ${u} ponad cel`.trim(), cls: 'over' };
+}
+function setDiffEl(elId, actual, target, unit) {
+  const el = $(elId);
+  if (!el) return;
+  const info = diffInfo(actual, target, unit);
+  el.textContent = info.text;
+  el.classList.remove('over', 'done');
+  if (info.cls) el.classList.add(info.cls);
+}
 function getWorkout(date) {
   if (!state.workouts[date]) state.workouts[date] = { enabled: false, exercises: [] };
   return state.workouts[date];
@@ -2199,7 +2259,7 @@ function renderCalendar() {
       daysWith++;
     }
   }
-  const setAvgMacro = (cardId, valId, sum, target) => {
+  const setAvgMacro = (cardId, valId, diffId, sum, target) => {
     const v = daysWith ? Math.round(sum / daysWith) : 0;
     $(valId).textContent = daysWith ? fmtNum(v) : '0';
     const card = $(cardId);
@@ -2208,11 +2268,12 @@ function renderCalendar() {
       const st = statusForRatio(v, target);
       if (st) card.classList.add('status-' + st);
     }
+    setDiffEl(diffId, daysWith ? v : 0, target, 'g');
   };
-  setAvgMacro('avgMacroP', 'avgP', sumP, state.targets.protein);
-  setAvgMacro('avgMacroC', 'avgC', sumC, state.targets.carbs);
-  setAvgMacro('avgMacroF', 'avgF', sumF, state.targets.fat);
-  setAvgMacro('avgMacroFi', 'avgFi', sumFi, state.targets.fiber);
+  setAvgMacro('avgMacroP', 'avgP', 'avgPDiff', sumP, state.targets.protein);
+  setAvgMacro('avgMacroC', 'avgC', 'avgCDiff', sumC, state.targets.carbs);
+  setAvgMacro('avgMacroF', 'avgF', 'avgFDiff', sumF, state.targets.fat);
+  setAvgMacro('avgMacroFi', 'avgFi', 'avgFiDiff', sumFi, state.targets.fiber);
   const avgKcal = daysWith ? Math.round(sumKcal / daysWith) : 0;
   const avgEl = $('avgVal');
   avgEl.textContent = daysWith ? fmtNum(avgKcal) : '—';
@@ -2221,6 +2282,7 @@ function renderCalendar() {
     const avgStatus = statusForRatio(avgKcal, state.targets.kcal);
     if (avgStatus) avgEl.classList.add('avg-status-' + avgStatus);
   }
+  setDiffEl('avgDiff', daysWith ? avgKcal : 0, state.targets.kcal, 'kcal / dzień');
 
   $('calGrid').innerHTML = cells.map(c => {
     const key = dateKey(c.y, c.m, c.d);
@@ -2300,6 +2362,12 @@ function renderDay() {
   if (macroTiles[1]) setMacroStatus(macroTiles[1], t.carbs, state.targets.carbs);
   if (macroTiles[2]) setMacroStatus(macroTiles[2], t.fat, state.targets.fat);
   if (macroTiles[3]) setMacroStatus(macroTiles[3], t.fiber, state.targets.fiber);
+  // diff hints
+  setDiffEl('kcalDiff', t.kcal, state.targets.kcal, 'kcal');
+  setDiffEl('mPDiff', t.protein, state.targets.protein, 'g');
+  setDiffEl('mCDiff', t.carbs, state.targets.carbs, 'g');
+  setDiffEl('mFDiff', t.fat, state.targets.fat, 'g');
+  setDiffEl('mFiDiff', t.fiber, state.targets.fiber, 'g');
   // legend
   $('legP').textContent = `${t.protein.toFixed(0)} g`;
   $('legC').textContent = `${t.carbs.toFixed(0)} g`;
@@ -3338,10 +3406,33 @@ function importCsvFile(file) {
 
 async function handleCsvImport(files) {
   if (!files || !files.length) return;
-  if (!confirm(`Zaimportować ${files.length} plik(ów) CSV?\n\nDane zostaną DODANE do istniejących wpisów (nie nadpiszą).`)) return;
+  // Rozdziel pliki: JSON backup vs CSV
+  const jsonFiles = [], csvFiles = [];
+  for (const f of files) {
+    if (/\.json$/i.test(f.name) || f.type === 'application/json') jsonFiles.push(f);
+    else csvFiles.push(f);
+  }
+
+  // Importuj backupy JSON pojedynczo (każdy z własnym potwierdzeniem)
+  let backupOk = 0, backupErrors = [];
+  for (const file of jsonFiles) {
+    const r = await importBackupFile(file);
+    if (r.error) backupErrors.push(`${file.name}: ${r.error}`);
+    else if (r.ok) backupOk++;
+  }
+  if (backupOk) {
+    if (state.currentDate) renderDay();
+    renderCalendar();
+    toast(`Wczytano backup (${backupOk})`, 'success');
+  }
+  if (backupErrors.length) toast(backupErrors.join('; '), 'error');
+
+  if (!csvFiles.length) return;
+
+  if (!confirm(`Zaimportować ${csvFiles.length} plik(ów) CSV?\n\nDane zostaną DODANE do istniejących wpisów (nie nadpiszą).`)) return;
   let totalDiet = 0, totalWo = 0, daysDiet = new Set(), daysWo = new Set();
   const errors = [];
-  for (const file of files) {
+  for (const file of csvFiles) {
     const r = await importCsvFile(file);
     if (r.error) { errors.push(`${file.name}: ${r.error}`); continue; }
     if (r.type === 'diet') { totalDiet += r.count; for (const d of (r.days || [])) daysDiet.add(d); }
@@ -3358,6 +3449,93 @@ async function handleCsvImport(files) {
   if (msg) toast(msg.trim(), errors.length ? 'error' : 'success');
   else if (errors.length) toast(errors.join('\n'), 'error');
   else toast('Brak danych do zaimportowania', 'error');
+}
+
+// === BACKUP / RESTORE (pełna kopia w jednym pliku JSON) ===
+function exportBackup() {
+  const payload = {
+    type: 'kalkulator-kalorii-backup',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    data: state.data,
+    customProducts: state.customProducts,
+    workouts: state.workouts,
+    recipes: state.recipes,
+    targets: state.targets,
+  };
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const ts = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `kalorie-backup-${ts}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Backup zapisany — przenieś plik na nowe urządzenie i wczytaj', 'success');
+}
+
+async function importBackupFile(file) {
+  try {
+    const text = await file.text();
+    const obj = JSON.parse(text);
+    if (!obj || obj.type !== 'kalkulator-kalorii-backup') {
+      return { error: 'To nie jest plik backupu' };
+    }
+    const choice = confirm(
+      `Wczytać backup z ${obj.exportedAt ? obj.exportedAt.slice(0,10) : '?'}?\n\n` +
+      `OK = SCALĆ z bieżącymi danymi (bezpieczne)\n` +
+      `Anuluj = pomiń`
+    );
+    if (!choice) return { error: 'Anulowano' };
+    // merge: dane dziennika — po datach (suma list); produkty/przepisy — dedup po id/nazwie
+    if (obj.data && typeof obj.data === 'object') {
+      for (const k of Object.keys(obj.data)) {
+        const incoming = obj.data[k] || [];
+        const existing = state.data[k] || [];
+        // unikalność: po name+grams+meal+timestamp
+        const sig = (x) => `${x.name}|${x.grams}|${x.meal || ''}|${x.timestamp || ''}`;
+        const seen = new Set(existing.map(sig));
+        const merged = existing.slice();
+        for (const it of incoming) if (!seen.has(sig(it))) merged.push(it);
+        state.data[k] = merged;
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+    }
+    if (Array.isArray(obj.customProducts)) {
+      const byKey = new Map(state.customProducts.map(p => [p.name + '|' + (p.barcode || ''), p]));
+      for (const p of obj.customProducts) {
+        const k = p.name + '|' + (p.barcode || '');
+        if (!byKey.has(k)) state.customProducts.push(p);
+      }
+      saveCustom();
+    }
+    if (obj.workouts && typeof obj.workouts === 'object') {
+      for (const k of Object.keys(obj.workouts)) {
+        if (!state.workouts[k]) state.workouts[k] = obj.workouts[k];
+      }
+      saveWorkouts();
+    }
+    if (Array.isArray(obj.recipes)) {
+      const seen = new Set(state.recipes.map(r => r.id));
+      for (const r of obj.recipes) if (!seen.has(r.id)) state.recipes.push(r);
+      saveRecipes();
+    }
+    if (obj.targets && typeof obj.targets === 'object') {
+      // backup nadpisuje cele tylko jeśli aktualne są puste/zerowe
+      const hasAny = Object.values(state.targets).some(v => v > 0);
+      if (!hasAny) {
+        state.targets = Object.assign(state.targets, obj.targets);
+        saveTargets();
+        loadTargetsUI();
+      }
+    }
+    return { ok: true };
+  } catch (e) {
+    return { error: e.message || 'Błąd parsowania JSON' };
+  }
 }
 
 // === TOAST ===
@@ -3759,6 +3937,7 @@ document.querySelectorAll('#mealPicker button').forEach(btn => {
 // CSV export buttons
 $('exportCsvBtn').addEventListener('click', exportAllCsv);
 $('exportWoCsvBtn').addEventListener('click', exportAllWorkoutsCsv);
+$('backupBtn').addEventListener('click', exportBackup);
 
 // CSV import
 $('importCsvBtn').addEventListener('click', () => $('csvFileInput').click());
