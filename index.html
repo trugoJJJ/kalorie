@@ -1582,6 +1582,50 @@
   .avg-status-red { color: #C13B4D !important; }
   .avg-status-orange { color: #C76A1E !important; }
   .avg-status-green { color: #2EAA5C !important; }
+  /* Macro tiles + hero kcal status */
+  .macro.status-red { background: #F9DDE0; }
+  .macro.status-red .mv { color: #C13B4D; }
+  .macro.status-orange { background: #FBE8D2; }
+  .macro.status-orange .mv { color: #C76A1E; }
+  .macro.status-green { background: #DCF1E4; }
+  .macro.status-green .mv { color: #2EAA5C; }
+  .kcal-big.status-red { color: #C13B4D; }
+  .kcal-big.status-orange { color: #C76A1E; }
+  .kcal-big.status-green { color: #2EAA5C; }
+  /* Monthly average macros card */
+  .avg-macros {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 6px 16px 4px;
+  }
+  .avg-macro {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 10px 4px;
+    text-align: center;
+    box-shadow: var(--shadow-xs);
+  }
+  .avg-macro .v {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .avg-macro .v small { font-size: 10px; font-weight: 500; color: var(--subtle); }
+  .avg-macro .n {
+    font-size: 9.5px;
+    font-weight: 600;
+    color: var(--subtle);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .avg-macro.status-red { background: #F9DDE0; }
+  .avg-macro.status-red .v { color: #C13B4D; }
+  .avg-macro.status-orange { background: #FBE8D2; }
+  .avg-macro.status-orange .v { color: #C76A1E; }
+  .avg-macro.status-green { background: #DCF1E4; }
+  .avg-macro.status-green .v { color: #2EAA5C; }
 </style>
 </head>
 <body>
@@ -1668,6 +1712,24 @@
           <span class="cal-dot" style="background: var(--accent);"></span>
           <span class="cal-dot" style="background: var(--accent-soft);"></span>
         </div>
+      </div>
+    </div>
+    <div class="avg-macros">
+      <div class="avg-macro" id="avgMacroP">
+        <div class="v"><span id="avgP">0</span><small> g</small></div>
+        <div class="n">Białko</div>
+      </div>
+      <div class="avg-macro" id="avgMacroC">
+        <div class="v"><span id="avgC">0</span><small> g</small></div>
+        <div class="n">Węgle</div>
+      </div>
+      <div class="avg-macro" id="avgMacroF">
+        <div class="v"><span id="avgF">0</span><small> g</small></div>
+        <div class="n">Tłuszcze</div>
+      </div>
+      <div class="avg-macro" id="avgMacroFi">
+        <div class="v"><span id="avgFi">0</span><small> g</small></div>
+        <div class="n">Błonnik</div>
       </div>
     </div>
   </div>
@@ -2123,15 +2185,34 @@ function renderCalendar() {
     cells.push({ d: nextD, other: true, y: m === 11 ? y+1 : y, m: m === 11 ? 0 : m+1 });
   }
 
-  // Średnia kcal w tym miesiącu
-  let sumKcal = 0, daysWith = 0;
+  // Średnie w tym miesiącu
+  let sumKcal = 0, sumP = 0, sumC = 0, sumF = 0, sumFi = 0, daysWith = 0;
   for (let d = 1; d <= last; d++) {
     const items = state.data[dateKey(y, m, d)];
     if (items && items.length) {
-      sumKcal += dayTotals(items).kcal;
+      const t = dayTotals(items);
+      sumKcal += t.kcal;
+      sumP += t.protein;
+      sumC += t.carbs;
+      sumF += t.fat;
+      sumFi += t.fiber;
       daysWith++;
     }
   }
+  const setAvgMacro = (cardId, valId, sum, target) => {
+    const v = daysWith ? Math.round(sum / daysWith) : 0;
+    $(valId).textContent = daysWith ? fmtNum(v) : '0';
+    const card = $(cardId);
+    card.classList.remove('status-red','status-orange','status-green');
+    if (daysWith) {
+      const st = statusForRatio(v, target);
+      if (st) card.classList.add('status-' + st);
+    }
+  };
+  setAvgMacro('avgMacroP', 'avgP', sumP, state.targets.protein);
+  setAvgMacro('avgMacroC', 'avgC', sumC, state.targets.carbs);
+  setAvgMacro('avgMacroF', 'avgF', sumF, state.targets.fat);
+  setAvgMacro('avgMacroFi', 'avgFi', sumFi, state.targets.fiber);
   const avgKcal = daysWith ? Math.round(sumKcal / daysWith) : 0;
   const avgEl = $('avgVal');
   avgEl.textContent = daysWith ? fmtNum(avgKcal) : '—';
@@ -2194,11 +2275,31 @@ function renderDay() {
   const items = getDay(state.currentDate);
   const t = dayTotals(items);
   $('totalCal').textContent = fmtNum(Math.round(t.kcal));
+  // kcal big status
+  const totalCalEl = $('totalCal');
+  totalCalEl.classList.remove('status-red','status-orange','status-green');
+  if (t.kcal > 0) {
+    const st = statusForRatio(t.kcal, state.targets.kcal);
+    if (st) totalCalEl.classList.add('status-' + st);
+  }
   // macro tiles
   $('mP').textContent = t.protein.toFixed(0);
   $('mC').textContent = t.carbs.toFixed(0);
   $('mF').textContent = t.fat.toFixed(0);
   $('mFi').textContent = t.fiber.toFixed(0);
+  const setMacroStatus = (tileSelector, val, target) => {
+    const tile = tileSelector;
+    tile.classList.remove('status-red','status-orange','status-green');
+    if (val > 0) {
+      const st = statusForRatio(val, target);
+      if (st) tile.classList.add('status-' + st);
+    }
+  };
+  const macroTiles = document.querySelectorAll('.macros .macro');
+  if (macroTiles[0]) setMacroStatus(macroTiles[0], t.protein, state.targets.protein);
+  if (macroTiles[1]) setMacroStatus(macroTiles[1], t.carbs, state.targets.carbs);
+  if (macroTiles[2]) setMacroStatus(macroTiles[2], t.fat, state.targets.fat);
+  if (macroTiles[3]) setMacroStatus(macroTiles[3], t.fiber, state.targets.fiber);
   // legend
   $('legP').textContent = `${t.protein.toFixed(0)} g`;
   $('legC').textContent = `${t.carbs.toFixed(0)} g`;
