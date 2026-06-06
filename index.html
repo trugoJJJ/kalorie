@@ -2049,46 +2049,106 @@ function addBlankExercise() {
 
 // === WYSZUKIWANIE ===
 let searchTimer;
+let searchSeq = 0;
+let searchAbort = null;
+
+function customMatchesFor(query) {
+  const qLower = query.toLowerCase();
+  let matches = state.customProducts.filter(p =>
+    (p.product_name_pl || p.product_name || '').toLowerCase().includes(qLower)
+  );
+  if (state.lidlOnly) matches = matches.filter(p => p._isLidl);
+  return matches;
+}
+
+async function fetchWithTimeout(url, signal, timeoutMs = 9000) {
+  const ctrl = new AbortController();
+  const onAbort = () => ctrl.abort();
+  if (signal) signal.addEventListener('abort', onAbort);
+  const t = setTimeout(() => ctrl.abort('timeout'), timeoutMs);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal });
+    return res;
+  } finally {
+    clearTimeout(t);
+    if (signal) signal.removeEventListener('abort', onAbort);
+  }
+}
+
 async function searchProducts(query) {
   state.lastSearchQuery = query;
+  // Pokaż własne produkty natychmiast (synchroniczne), żeby UI nie był "martwy"
+  const customs = customMatchesFor(query);
   $('searchHint').classList.add('show');
   $('searchHint').textContent = state.lidlOnly ? 'Wyszukiwanie w Lidlu...' : 'Wyszukiwanie...';
-  $('results').innerHTML = '<div class="loader"><div class="spinner"></div>Szukam...</div>';
-  try {
-    let url;
-    if (state.lidlOnly) {
-      // Filtruj po markach własnych Lidla — używamy parametru brands_tags
-      const brands = LIDL_BRANDS.join(',');
-      url = `https://pl.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=30&tagtype_0=brands&tag_contains_0=contains&tag_0=${encodeURIComponent(brands)}&fields=code,product_name,product_name_pl,brands,nutriments`;
-    } else {
-      url = `https://pl.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=20&fields=code,product_name,product_name_pl,brands,nutriments`;
-    }
-    const res = await fetch(url);
-    const json = await res.json();
-    let products = json.products || [];
-    // Dodatkowe filtrowanie po stronie klienta dla pewności (OFF czasem zwraca inne marki)
-    if (state.lidlOnly) {
-      products = products.filter(p => {
-        if (!p.brands) return false;
-        const brandsLower = p.brands.toLowerCase();
-        return LIDL_BRANDS.some(b => brandsLower.includes(b.toLowerCase()));
-      });
-    }
-    // Dodaj pasujące produkty własne na początek listy
-    // Gdy aktywny Lidl-only — pokaż tylko te oznaczone jako z Lidla
-    const qLower = query.toLowerCase();
-    let customMatches = state.customProducts.filter(p =>
-      (p.product_name_pl || p.product_name || '').toLowerCase().includes(qLower)
-    );
-    if (state.lidlOnly) {
-      customMatches = customMatches.filter(p => p._isLidl);
-    }
-    products = [...customMatches, ...products];
-    renderResults(products);
-  } catch (e) {
-    $('results').innerHTML = '<div class="empty-meal">Błąd. Sprawdź połączenie.</div>';
-    $('searchHint').classList.remove('show');
+  if (customs.length) {
+    renderResults(customs, { partial: true });
+  } else {
+    $('results').innerHTML = '<div class="loader"><div class="spinner"></div>Szukam...</div>';
   }
+
+  // Anuluj poprzedni in-flight request
+  if (searchAbort) { try { searchAbort.abort(); } catch(_){} }
+  searchAbort = new AbortController();
+  const mySignal = searchAbort.signal;
+  const mySeq = ++searchSeq;
+
+  const baseUrl = state.lidlOnly
+    ? `https://pl.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=30&tagtype_0=brands&tag_contains_0=contains&tag_0=${encodeURIComponent(LIDL_BRANDS.join(','))}&fields=code,product_name,product_name_pl,brands,nutriments`
+    : `https://pl.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=20&fields=code,product_name,product_name_pl,brands,nutriments`;
+
+  // Próbuj 2 razy: drugi raz na world.openfoodfacts.org (zwykle szybszy mirror)
+  const urls = [baseUrl, baseUrl.replace('://pl.openfoodfacts.org', '://world.openfoodfacts.org')];
+
+  let products = null;
+  let lastErr = null;
+  for (let i = 0; i < urls.length; i++) {
+    if (mySignal.aborted || mySeq !== searchSeq) return;
+    try {
+      const res = await fetchWithTimeout(urls[i], mySignal, 9000);
+      if (mySeq !== searchSeq) return; // stara odpowiedź — zignoruj
+      const json = await res.json();
+      if (mySeq !== searchSeq) return;
+      products = json.products || [];
+      break;
+    } catch (e) {
+      lastErr = e;
+      if (e && e.name === 'AbortError') {
+        // jeśli przerwane bo nowy search — odpuść
+        if (mySeq !== searchSeq) return;
+        // timeout/abort z innego powodu — spróbuj drugi mirror
+        continue;
+      }
+      // sieć / inny błąd — spróbuj drugi mirror
+      continue;
+    }
+  }
+
+  if (mySeq !== searchSeq) return;
+
+  if (products === null) {
+    // Wszystkie próby padły
+    if (customs.length) {
+      // Pokaż chociaż własne — usuń komunikat „szukam"
+      renderResults(customs, { partial: false, errorNote: 'Bazy OFF nie odpowiadają — pokazuję tylko Twoje produkty.' });
+    } else {
+      $('results').innerHTML = '<div class="empty-meal">Bazy OFF nie odpowiadają. Spróbuj za chwilę lub naciśnij Enter.</div>';
+      $('searchHint').classList.remove('show');
+    }
+    return;
+  }
+
+  // Filtr Lidla po stronie klienta
+  if (state.lidlOnly) {
+    products = products.filter(p => {
+      if (!p.brands) return false;
+      const bl = p.brands.toLowerCase();
+      return LIDL_BRANDS.some(b => bl.includes(b.toLowerCase()));
+    });
+  }
+  // Doklej własne na początek
+  const merged = [...customs, ...products];
+  renderResults(merged);
 }
 
 // === SKANER KODÓW KRESKOWYCH ===
@@ -2496,18 +2556,31 @@ function exportWorkoutDay(date) {
   return true;
 }
 
-function renderResults(products) {
+function renderResults(products, opts = {}) {
+  const { partial = false, errorNote = null } = opts;
   const valid = products.filter(p => {
     const n = p.nutriments || {};
     const name = p.product_name_pl || p.product_name;
     return name && (n['energy-kcal_100g'] || n.energy_100g);
   });
   if (!valid.length) {
+    if (partial) {
+      // Trzymamy loader — własne nie pasują, OFF jeszcze leci
+      return;
+    }
     $('searchHint').classList.remove('show');
-    $('results').innerHTML = '<div class="empty-meal">Brak wyników</div>';
+    $('results').innerHTML = errorNote
+      ? `<div class="empty-meal">${escapeHtml(errorNote)}</div>`
+      : '<div class="empty-meal">Brak wyników</div>';
     return;
   }
-  $('searchHint').textContent = `Podpowiedzi · ${valid.length} ${valid.length === 1 ? 'wynik' : 'wyniki'}`;
+  if (partial) {
+    $('searchHint').textContent = `Twoje produkty · ${valid.length} · ładuję bazę OFF…`;
+  } else if (errorNote) {
+    $('searchHint').textContent = errorNote;
+  } else {
+    $('searchHint').textContent = `Podpowiedzi · ${valid.length} ${valid.length === 1 ? 'wynik' : 'wyniki'}`;
+  }
   $('results').innerHTML = valid.map((p, i) => {
     const name = p.product_name_pl || p.product_name;
     const brand = p.brands ? p.brands.split(',')[0] : '';
@@ -2653,11 +2726,20 @@ $('searchInput').addEventListener('input', (e) => {
   const q = e.target.value.trim();
   $('searchClear').classList.toggle('show', q.length > 0);
   if (q.length < 2) {
+    // Przerwij in-flight zapytania jeśli użytkownik zmazał tekst
+    if (searchAbort) { try { searchAbort.abort(); } catch(_){} }
+    searchSeq++; // unieważnij wszystko co leci
     $('results').innerHTML = '';
     $('searchHint').classList.remove('show');
     return;
   }
-  searchTimer = setTimeout(() => searchProducts(q), 400);
+  // Pokaż natychmiast własne produkty (synchroniczne) — nawet przed debounce
+  const customsPreview = customMatchesFor(q);
+  if (customsPreview.length) {
+    $('searchHint').classList.add('show');
+    renderResults(customsPreview, { partial: true });
+  }
+  searchTimer = setTimeout(() => searchProducts(q), 250);
 });
 $('searchInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
