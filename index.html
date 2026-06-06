@@ -1476,6 +1476,19 @@
     background: #FFF1D7;
     color: #B66A00;
   }
+  .mi-recipe-badge {
+    display: inline-block;
+    background: #FFF1D7;
+    color: #B66A00;
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 5px;
+    margin-right: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+  }
   .add-recipe-chip {
     background: var(--accent-soft) !important;
     color: var(--accent) !important;
@@ -2065,7 +2078,16 @@ function renderDay() {
     const list = groups[mt.id];
     const kcal = list.reduce((s, it) => s + it.kcal, 0);
     const body = list.length
-      ? list.map(it => `
+      ? list.map(it => {
+          const isRecipe = !!it._fromRecipe;
+          const ingNames = (it._ingredients || []).map(x => x.name).filter(Boolean);
+          const metaSuffix = isRecipe && ingNames.length
+            ? ` · ${ingNames.length} skł.`
+            : '';
+          const nameBadge = isRecipe
+            ? '<span class="mi-recipe-badge" title="Z przepisu">Przepis</span>'
+            : '';
+          return `
           <div class="meal-item" data-idx="${it._idx}" data-meal="${mt.id}">
             <div class="mi-swipe-bg">
               <span>← Poprzedni posiłek</span>
@@ -2073,8 +2095,8 @@ function renderDay() {
             </div>
             <div class="mi-content">
               <div class="mi-info">
-                <div class="mi-name">${escapeHtml(it.name)}</div>
-                <div class="mi-meta">${it.grams} g</div>
+                <div class="mi-name">${nameBadge}${escapeHtml(it.name)}</div>
+                <div class="mi-meta">${it.grams} g${metaSuffix}</div>
               </div>
               <span class="mi-kcal">${Math.round(it.kcal)}</span>
               <div class="mi-actions">
@@ -2086,7 +2108,8 @@ function renderDay() {
                 </button>
               </div>
             </div>
-          </div>`).join('')
+          </div>`;
+        }).join('')
       : `<div class="empty-meal">Brak produktów</div>`;
     return `
       <div class="meal-group">
@@ -2672,14 +2695,29 @@ function saveCustomProduct() {
 // === RECIPES / PRZEPISY ===
 function getKnownProducts() {
   // Zwraca listę unikalnych produktów: customProducts + produkty użyte w dziennikach
-  // Każdy ma znormalizowane wartości na 100 g
+  // Każdy ma znormalizowane wartości na 100 g + lastGrams = ostatnia użyta gramatura w dzienniku
   const map = new Map();
-  // Custom products mają już per_100g
+  // Najpierw zbieram NAJNOWSZĄ gramaturę użycia każdego produktu z dziennika
+  const lastUsage = new Map(); // key -> { date, grams, item }
+  const sortedDates = Object.keys(state.data).sort();
+  for (const date of sortedDates) {
+    const items = state.data[date] || [];
+    for (const it of items) {
+      if (!it.name || !it.grams || it.grams <= 0) continue;
+      const key = it.name.toLowerCase();
+      // nadpisuj — chcemy ostatnie użycie (sortedDates rosnąco → ostatnie wygrywa)
+      lastUsage.set(key, { date, grams: it.grams, item: it });
+    }
+  }
+
+  // Custom products mają per_100g — gramatura z lastUsage jeśli istnieje, inaczej 100
   for (const p of state.customProducts) {
     const name = p.product_name_pl || p.product_name;
     if (!name) continue;
     const n = p.nutriments || {};
-    map.set(name.toLowerCase(), {
+    const key = name.toLowerCase();
+    const used = lastUsage.get(key);
+    map.set(key, {
       source: 'custom',
       name,
       brand: p.brands || '',
@@ -2688,28 +2726,26 @@ function getKnownProducts() {
       carbs100: n.carbohydrates_100g || 0,
       fat100: n.fat_100g || 0,
       fiber100: n.fiber_100g || 0,
+      lastGrams: used ? used.grams : 100,
       _isLidl: !!p._isLidl,
     });
   }
-  // Z dziennika — wsteczna kalkulacja na 100g z item.grams
-  for (const date of Object.keys(state.data)) {
-    const items = state.data[date] || [];
-    for (const it of items) {
-      const key = (it.name || '').toLowerCase();
-      if (!it.name || !it.grams || it.grams <= 0) continue;
-      if (map.has(key)) continue; // pierwszy znaleziony wystarczy
-      const k = 100 / it.grams;
-      map.set(key, {
-        source: 'used',
-        name: it.name,
-        brand: '',
-        kcal100: (it.kcal || 0) * k,
-        protein100: (it.protein || 0) * k,
-        carbs100: (it.carbs || 0) * k,
-        fat100: (it.fat || 0) * k,
-        fiber100: (it.fiber || 0) * k,
-      });
-    }
+  // Z dziennika — wsteczna kalkulacja na 100g z item.grams (dla produktów, których nie ma w custom)
+  for (const [key, u] of lastUsage.entries()) {
+    if (map.has(key)) continue;
+    const it = u.item;
+    const k = 100 / it.grams;
+    map.set(key, {
+      source: 'used',
+      name: it.name,
+      brand: '',
+      kcal100: (it.kcal || 0) * k,
+      protein100: (it.protein || 0) * k,
+      carbs100: (it.carbs || 0) * k,
+      fat100: (it.fat || 0) * k,
+      fiber100: (it.fiber || 0) * k,
+      lastGrams: it.grams,
+    });
   }
   return Array.from(map.values()).sort((a,b) => a.name.localeCompare(b.name, 'pl'));
 }
@@ -2824,17 +2860,25 @@ function renderIngredientPickerList(filter) {
     el.innerHTML = `<div class="pl-empty">Brak pasujących produktów. Najpierw dodaj produkt do dnia lub stwórz własny.</div>`;
     return;
   }
-  el.innerHTML = list.slice(0, 100).map((p, i) => `
+  el.innerHTML = list.slice(0, 100).map((p, i) => {
+    const lg = Math.round(p.lastGrams || 100);
+    const hasHistory = p.lastGrams && p.source !== 'custom' || (p.lastGrams && p.lastGrams !== 100);
+    const metaText = hasHistory
+      ? `${Math.round(p.kcal100)} kcal/100g · ostatnio ${lg} g`
+      : `${Math.round(p.kcal100)} kcal/100g`;
+    return `
     <div class="pl-item" data-i="${currentPickerProducts.indexOf(p)}">
       <div class="pl-name">${escapeHtml(p.name)}</div>
-      <div class="pl-meta">${Math.round(p.kcal100)} kcal/100g</div>
+      <div class="pl-meta">${metaText}</div>
     </div>
-  `).join('');
+  `;
+  }).join('');
   el.querySelectorAll('.pl-item').forEach(item => {
     item.addEventListener('click', () => {
       const p = currentPickerProducts[+item.dataset.i];
       if (!p) return;
-      const gramsStr = prompt(`Ile gramów „${p.name}"?`, '100');
+      const defaultG = String(Math.round(p.lastGrams || 100));
+      const gramsStr = prompt(`Ile gramów „${p.name}"?`, defaultG);
       if (gramsStr === null) return;
       const grams = parseFloat(gramsStr.replace(',', '.'));
       if (!grams || grams <= 0) { toast('Nieprawidłowa gramatura', 'error'); return; }
@@ -2906,19 +2950,24 @@ function confirmRecipeToDay() {
   const mealBtn = document.querySelector('#recipeMealPicker button.on');
   const meal = mealBtn ? mealBtn.dataset.meal : 'obiad';
   const items = getDay(state.currentDate);
-  for (const ing of r.ingredients) {
-    items.push({
-      name: ing.name,
-      grams: ing.grams,
-      meal,
-      kcal: ing.kcal || 0,
-      protein: ing.protein || 0,
-      carbs: ing.carbs || 0,
-      fat: ing.fat || 0,
-      fiber: ing.fiber || 0,
-      _fromRecipe: r.id,
-    });
-  }
+  // Dodaj JAKO JEDNĄ POZYCJĘ obiadu — z automatycznie policzonymi kcal/gramami z przepisu.
+  // Składniki zachowujemy w polu _ingredients (do podglądu w przyszłości).
+  const t = r.totals || recipeTotalsOf(r);
+  const totalGrams = r.ingredients.reduce((s, ing) => s + (ing.grams || 0), 0);
+  items.push({
+    name: r.name,
+    grams: Math.round(totalGrams),
+    meal,
+    kcal: t.kcal || 0,
+    protein: t.protein || 0,
+    carbs: t.carbs || 0,
+    fat: t.fat || 0,
+    fiber: t.fiber || 0,
+    _fromRecipe: r.id,
+    _ingredients: r.ingredients.map(i => ({
+      name: i.name, grams: i.grams,
+    })),
+  });
   save();
   closeRecipeToDayPicker();
   // wyczyść wyszukiwarkę
@@ -2927,7 +2976,7 @@ function confirmRecipeToDay() {
   $('searchHint').classList.remove('show');
   $('results').innerHTML = '';
   renderDay();
-  toast(`Dodano „${r.name}" (${r.ingredients.length} składników)`, 'success');
+  toast(`Dodano „${r.name}" · ${Math.round(t.kcal)} kcal`, 'success');
 }
 
 // === CSV IMPORT ===
