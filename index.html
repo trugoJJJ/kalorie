@@ -1055,6 +1055,264 @@
     color: var(--cta-fg);
     box-shadow: 0 10px 24px var(--cta-shadow);
   }
+
+  /* === MEAL ITEM EDIT BUTTON + SWIPE === */
+  .meal-item {
+    position: relative;
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+  .mi-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .mi-edit, .mi-rm {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--subtle);
+    transition: background 0.15s, color 0.15s;
+  }
+  .mi-edit:hover, .mi-edit:active { background: var(--accent-soft); color: var(--accent); }
+  .mi-rm:hover, .mi-rm:active { background: var(--rm-bg); color: var(--rm-fg); }
+  .mi-swipe-bg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+  }
+  .meal-item.swiping .mi-swipe-bg { opacity: 1; }
+  .mi-content {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: transparent;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .meal-item.dragging .mi-content { transition: none; }
+
+  /* === WORKOUT CARD === */
+  .workout-card {
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 16px 18px;
+    margin-top: 18px;
+    box-shadow: var(--shadow-xs);
+  }
+  .wo-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+  }
+  .wo-toggle {
+    position: relative;
+    flex-shrink: 0;
+    width: 44px;
+    height: 26px;
+    background: var(--chip);
+    border-radius: 999px;
+    transition: background 0.18s;
+  }
+  .wo-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+  .wo-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .wo-toggle.on { background: var(--accent); }
+  .wo-toggle.on .wo-knob { transform: translateX(18px); }
+  .wo-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .wo-sub {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--subtle);
+    margin-top: 2px;
+  }
+  .workout-body {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--hair);
+    display: none;
+  }
+  .workout-body.show { display: block; }
+  .wo-preset-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .wo-preset {
+    flex: 1;
+    background: var(--bg);
+    border: 1.5px solid var(--hair);
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 9px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .wo-preset:hover, .wo-preset:active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .wo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .wo-ex {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .wo-ex-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .wo-ex-name {
+    flex: 1;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 2px 0;
+    width: 100%;
+  }
+  .wo-ex-note {
+    font-family: inherit;
+    font-size: 11px;
+    color: var(--subtle);
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    width: 100%;
+    resize: none;
+  }
+  .wo-ex-rm {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--subtle);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .wo-ex-rm:hover, .wo-ex-rm:active { background: var(--rm-bg); color: var(--rm-fg); }
+  .wo-ex-fields {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 8px;
+  }
+  .wo-field {
+    background: var(--surface);
+    border: 1px solid var(--hair);
+    border-radius: 8px;
+    padding: 7px 9px;
+    display: flex;
+    flex-direction: column;
+  }
+  .wo-field label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 2px;
+  }
+  .wo-field input {
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    width: 100%;
+  }
+  .wo-add {
+    width: 100%;
+    margin-top: 10px;
+    background: var(--accent-soft);
+    border: 1.5px dashed var(--accent);
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 11px;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  .wo-export {
+    width: 100%;
+    margin-top: 8px;
+    background: var(--cta);
+    color: var(--cta-fg);
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px var(--cta-shadow);
+  }
+  .wo-empty {
+    text-align: center;
+    font-size: 12px;
+    color: var(--subtle);
+    padding: 14px 0;
+  }
 </style>
 </head>
 <body>
@@ -1068,8 +1326,11 @@
         <span class="year" id="calYear"></span>
       </div>
       <div class="cal-nav">
-        <button id="exportCsvBtn" class="accent" aria-label="Eksport CSV" title="Eksport CSV">
+        <button id="exportCsvBtn" class="accent" aria-label="Eksport diety CSV" title="Eksport diety CSV">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+        <button id="exportWoCsvBtn" class="accent" aria-label="Eksport treningów CSV" title="Eksport treningów CSV">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h2v14H6zM16 5h2v14h-2zM4 9h2v6H4zM18 9h2v6h-2zM8 12h8"/></svg>
         </button>
         <button id="prevMonth" aria-label="Poprzedni miesiąc">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -1173,6 +1434,30 @@
 
       <!-- LISTA POSIŁKÓW (4 sekcje) -->
       <div class="meals-wrap" id="mealsWrap"></div>
+
+      <!-- TRENING -->
+      <div class="workout-card" id="workoutCard">
+        <label class="wo-toggle-row">
+          <span class="wo-toggle" id="workoutToggle">
+            <input type="checkbox" id="workoutEnabled">
+            <span class="wo-knob"></span>
+          </span>
+          <span class="wo-title">
+            Trening dzisiaj
+            <span class="wo-sub">Zaznacz jeśli był trening</span>
+          </span>
+        </label>
+        <div class="workout-body" id="workoutBody">
+          <div class="wo-preset-row">
+            <button class="wo-preset" data-preset="gora">Wczytaj „Góra"</button>
+            <button class="wo-preset" data-preset="dol">Wczytaj „Dół"</button>
+          </div>
+          <div class="wo-list" id="workoutList"></div>
+          <button class="wo-add" id="workoutAdd">+ Dodaj ćwiczenie</button>
+          <button class="wo-export" id="workoutExportBtn">↓ Eksport treningów CSV</button>
+        </div>
+      </div>
+
       <div style="display:flex; justify-content:flex-end; margin-top:4px;">
         <button class="mh-clear" id="clearDayBtn">Wyczyść cały dzień</button>
       </div>
@@ -1303,7 +1588,34 @@
 <script>
 const STORAGE_KEY = 'kalkulator-kalorii-data';
 const EXPORT_KEY = 'kalkulator-kalorii-last-export';
+const WO_EXPORT_KEY = 'kalkulator-kalorii-last-wo-export';
 const CUSTOM_KEY = 'kalkulator-kalorii-custom-products';
+const WORKOUT_KEY = 'kalkulator-kalorii-workouts';
+
+const WORKOUT_PRESETS = {
+  gora: [
+    { name: 'Wyciskanie hantli — ławka skośna / maszyna', note: '', sets: 4, weight: '12,5kg hantle; 30kg maszyna' },
+    { name: 'Wyciąg do wiosłowania', note: '', sets: 4, weight: '32/39kg' },
+    { name: 'Wyciskanie hantli / sztangi — ławka pozioma', note: '', sets: 4, weight: '12,5kg hantle; 30kg + gryf' },
+    { name: 'Podciąganie na drążku', note: 'lub wersja wspomagana', sets: 4, weight: 'poziom 4' },
+    { name: 'Uginanie ramion ze sztangą', note: '', sets: 4, weight: '14kg' },
+    { name: 'Triceps na wyciągu', note: 'lub wyciskanie francuskie', sets: 4, weight: '20kg' },
+  ],
+  dol: [
+    { name: 'Wyciskanie hantli nad głowę', note: 'siedząc', sets: 4, weight: '7kg' },
+    { name: 'Unoszenie hantli bokiem — lateral raise', note: 'kluczowe dla szerokości sylwetki', sets: 4, weight: '4kg' },
+    { name: 'Unoszenie hantli przodem', note: '', sets: 4, weight: '4kg' },
+    { name: 'Mid row maszyna', note: 'tył barku, ważny dla postawy', sets: 4, weight: '30kg' },
+    { name: 'Szrugi z hantlami', note: 'czworoboczny', sets: 4, weight: '12,5kg' },
+    { name: 'Hack squat / Smith machine', note: 'zamiennik przysiadu ze sztangą', sets: 4, weight: '20kg' },
+    { name: 'Leg press', note: '', sets: 4, weight: '100kg' },
+    { name: 'Plank', note: '', sets: 4, weight: '60sec' },
+    { name: 'Crunch na maszynie / brzuszki', note: '', sets: 4, weight: '60kg' },
+    { name: 'Nożyce', note: '', sets: 4, weight: '30 powt.' },
+    { name: 'Russian twist z hantlami', note: '', sets: 4, weight: '50 powt. / 8kg' },
+    { name: 'Deska boczna', note: '', sets: 4, weight: '60 sec/stronę' },
+  ],
+};
 const LIDL_BRANDS = ['Pilos','Pikok','Combino','Milbona','Vitafit','Italiamo','Sondey','Dulano','Freeway','Belbake','Fin Carré','Bluedino','Crusti Croc','Chef Select','Alesto','Bellarom','Argus','Bon Gelati','Lupilu','Crownfield','Realdo','Mister Choc','Naturis','Floralys'];
 const MONTHS = ['styczeń','luty','marzec','kwiecień','maj','czerwiec','lipiec','sierpień','wrzesień','październik','listopad','grudzień'];
 const WEEKDAYS = ['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
@@ -1326,17 +1638,24 @@ function guessMeal() {
 const state = {
   data: JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'),
   customProducts: JSON.parse(localStorage.getItem(CUSTOM_KEY) || '[]'),
+  workouts: JSON.parse(localStorage.getItem(WORKOUT_KEY) || '{}'),
   currentDate: null,
   calMonth: new Date().getMonth(),
   calYear: new Date().getFullYear(),
   selectedProduct: null,
   selectedMeal: 'inne',
+  editingIndex: null,
   lidlOnly: false,
   scanner: null,
   lastSearchQuery: '',
 };
 
 function saveCustom() { localStorage.setItem(CUSTOM_KEY, JSON.stringify(state.customProducts)); }
+function saveWorkouts() { localStorage.setItem(WORKOUT_KEY, JSON.stringify(state.workouts)); }
+function getWorkout(date) {
+  if (!state.workouts[date]) state.workouts[date] = { enabled: false, exercises: [] };
+  return state.workouts[date];
+}
 
 const $ = (id) => document.getElementById(id);
 const todayStr = () => {
@@ -1495,15 +1814,26 @@ function renderDay() {
     const kcal = list.reduce((s, it) => s + it.kcal, 0);
     const body = list.length
       ? list.map(it => `
-          <div class="meal-item">
-            <div class="mi-info">
-              <div class="mi-name">${escapeHtml(it.name)}</div>
-              <div class="mi-meta">${it.grams} g</div>
+          <div class="meal-item" data-idx="${it._idx}" data-meal="${mt.id}">
+            <div class="mi-swipe-bg">
+              <span>← Poprzedni posiłek</span>
+              <span>Następny posiłek →</span>
             </div>
-            <span class="mi-kcal">${Math.round(it.kcal)}</span>
-            <button class="mi-rm" data-rm="${it._idx}" aria-label="Usuń">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-            </button>
+            <div class="mi-content">
+              <div class="mi-info">
+                <div class="mi-name">${escapeHtml(it.name)}</div>
+                <div class="mi-meta">${it.grams} g</div>
+              </div>
+              <span class="mi-kcal">${Math.round(it.kcal)}</span>
+              <div class="mi-actions">
+                <button class="mi-edit" data-edit="${it._idx}" aria-label="Edytuj">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                </button>
+                <button class="mi-rm" data-rm="${it._idx}" aria-label="Usuń">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </button>
+              </div>
+            </div>
           </div>`).join('')
       : `<div class="empty-meal">Brak produktów</div>`;
     return `
@@ -1520,6 +1850,13 @@ function renderDay() {
     `;
   }).join('');
 
+  attachSwipeHandlers();
+  $('mealsWrap').querySelectorAll('button[data-edit]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      editItem(+btn.dataset.edit);
+    });
+  });
   $('mealsWrap').querySelectorAll('button[data-rm]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1528,6 +1865,184 @@ function renderDay() {
       renderDay();
     });
   });
+
+  renderWorkout();
+}
+
+// === EDYCJA POZYCJI ===
+function editItem(idx) {
+  const items = getDay(state.currentDate);
+  const it = items[idx];
+  if (!it) return;
+  // Odtwórz "produkt" na 100 g z proporcji
+  const k = it.grams > 0 ? 100 / it.grams : 1;
+  const product = {
+    product_name: it.name,
+    product_name_pl: it.name,
+    nutriments: {
+      'energy-kcal_100g': it.kcal * k,
+      proteins_100g: it.protein * k,
+      carbohydrates_100g: it.carbs * k,
+      fat_100g: it.fat * k,
+      fiber_100g: it.fiber * k,
+    },
+  };
+  state.editingIndex = idx;
+  state.selectedProduct = product;
+  state.selectedMeal = it.meal || 'inne';
+  $('sheetTitle').textContent = it.name;
+  const kcalPer100 = Math.round(product.nutriments['energy-kcal_100g']);
+  $('sheetSub').textContent = `${kcalPer100} kcal / 100 g · edycja`;
+  $('gramsInput').value = it.grams;
+  setActiveQuick(it.grams);
+  setActiveMeal(state.selectedMeal);
+  updatePreview();
+  $('confirmBtn').textContent = 'Zapisz';
+  $('sheetDim').classList.add('show');
+  requestAnimationFrame(() => $('sheet').classList.add('show'));
+}
+
+// === SWIPE MIĘDZY POSIŁKAMI ===
+function attachSwipeHandlers() {
+  const SWIPE_THRESHOLD = 70;
+  const ORDER = MEAL_TYPES.map(m => m.id);
+  $('mealsWrap').querySelectorAll('.meal-item').forEach(el => {
+    const content = el.querySelector('.mi-content');
+    if (!content) return;
+    let startX = 0, startY = 0, dx = 0, dragging = false, locked = false;
+    el.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      startX = t.clientX; startY = t.clientY; dx = 0; dragging = true; locked = false;
+    }, { passive: true });
+    el.addEventListener('touchmove', (e) => {
+      if (!dragging) return;
+      const t = e.touches[0];
+      const ddx = t.clientX - startX;
+      const ddy = t.clientY - startY;
+      if (!locked) {
+        if (Math.abs(ddx) > 8 || Math.abs(ddy) > 8) {
+          if (Math.abs(ddx) > Math.abs(ddy)) {
+            locked = true;
+            el.classList.add('dragging','swiping');
+          } else {
+            dragging = false;
+            return;
+          }
+        } else return;
+      }
+      dx = ddx;
+      content.style.transform = `translateX(${dx}px)`;
+    }, { passive: true });
+    const finish = () => {
+      if (!dragging) return;
+      dragging = false;
+      el.classList.remove('dragging');
+      const idx = +el.dataset.idx;
+      const curMeal = el.dataset.meal;
+      const pos = ORDER.indexOf(curMeal);
+      let newMeal = null;
+      if (dx <= -SWIPE_THRESHOLD && pos > 0) newMeal = ORDER[pos - 1];
+      else if (dx >= SWIPE_THRESHOLD && pos < ORDER.length - 1) newMeal = ORDER[pos + 1];
+      if (newMeal) {
+        const items = getDay(state.currentDate);
+        if (items[idx]) {
+          items[idx].meal = newMeal;
+          save();
+          renderDay();
+          return;
+        }
+      }
+      content.style.transform = '';
+      setTimeout(() => el.classList.remove('swiping'), 180);
+    };
+    el.addEventListener('touchend', finish);
+    el.addEventListener('touchcancel', finish);
+  });
+}
+
+// === TRENING ===
+function renderWorkout() {
+  const w = getWorkout(state.currentDate);
+  $('workoutEnabled').checked = !!w.enabled;
+  $('workoutToggle').classList.toggle('on', !!w.enabled);
+  $('workoutBody').classList.toggle('show', !!w.enabled);
+
+  const list = $('workoutList');
+  if (!w.exercises.length) {
+    list.innerHTML = `<div class="wo-empty">Brak ćwiczeń. Wczytaj „Góra" / „Dół" lub dodaj własne.</div>`;
+    return;
+  }
+  list.innerHTML = w.exercises.map((ex, i) => `
+    <div class="wo-ex" data-idx="${i}">
+      <div class="wo-ex-head">
+        <div style="flex:1; min-width:0;">
+          <input class="wo-ex-name" data-field="name" data-idx="${i}" value="${escapeHtml(ex.name || '')}" placeholder="Nazwa ćwiczenia">
+          <input class="wo-ex-note" data-field="note" data-idx="${i}" value="${escapeHtml(ex.note || '')}" placeholder="(opcjonalna notatka)">
+        </div>
+        <button class="wo-ex-rm" data-rm="${i}" aria-label="Usuń">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="wo-ex-fields">
+        <div class="wo-field">
+          <label>Serie</label>
+          <input type="text" inputmode="numeric" data-field="sets" data-idx="${i}" value="${escapeHtml(String(ex.sets ?? ''))}">
+        </div>
+        <div class="wo-field">
+          <label>Obciążenie</label>
+          <input type="text" data-field="weight" data-idx="${i}" value="${escapeHtml(ex.weight || '')}" placeholder="np. 12,5kg">
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('input[data-field]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const i = +inp.dataset.idx;
+      const field = inp.dataset.field;
+      if (!w.exercises[i]) return;
+      w.exercises[i][field] = inp.value;
+      saveWorkouts();
+    });
+  });
+  list.querySelectorAll('button[data-rm]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      w.exercises.splice(+btn.dataset.rm, 1);
+      saveWorkouts();
+      renderWorkout();
+    });
+  });
+}
+
+function toggleWorkout() {
+  const w = getWorkout(state.currentDate);
+  w.enabled = !w.enabled;
+  saveWorkouts();
+  renderWorkout();
+}
+
+function loadWorkoutPreset(preset) {
+  const items = WORKOUT_PRESETS[preset];
+  if (!items) return;
+  const w = getWorkout(state.currentDate);
+  // Dodaj na koniec (zachowaj istniejące)
+  w.exercises = [...w.exercises, ...items.map(x => ({ ...x }))];
+  saveWorkouts();
+  renderWorkout();
+  toast(`Wczytano: ${preset === 'gora' ? 'Góra' : 'Dół'}`, 'success');
+}
+
+function addBlankExercise() {
+  const w = getWorkout(state.currentDate);
+  w.exercises.push({ name: '', note: '', sets: '', weight: '' });
+  saveWorkouts();
+  renderWorkout();
+  // focus nowego pola
+  setTimeout(() => {
+    const inputs = $('workoutList').querySelectorAll('.wo-ex-name');
+    const last = inputs[inputs.length - 1];
+    if (last) last.focus();
+  }, 50);
 }
 
 // === WYSZUKIWANIE ===
@@ -1916,6 +2431,67 @@ function checkAutoExport() {
       setTimeout(() => toast(`Auto-eksport: wczoraj (${items.length} pozycji)`, 'success'), 500);
     }
   }
+  // Auto-eksport treningu z wczoraj
+  const lastWoExport = localStorage.getItem(WO_EXPORT_KEY);
+  const w = state.workouts[yesterday];
+  if (lastWoExport !== today && w && w.enabled && w.exercises && w.exercises.length) {
+    const ok = exportWorkoutDay(yesterday);
+    if (ok) {
+      localStorage.setItem(WO_EXPORT_KEY, today);
+      setTimeout(() => toast(`Auto-eksport treningu: wczoraj`, 'success'), 900);
+    }
+  }
+}
+
+// === CSV TRENINGÓW ===
+function buildWorkoutCsv(dates) {
+  const headers = ['data','cwiczenie','opis','serie','obciazenie'];
+  const lines = [headers.join(',')];
+  const sorted = [...dates].sort();
+  for (const date of sorted) {
+    const w = state.workouts[date];
+    if (!w || !w.enabled || !w.exercises || !w.exercises.length) continue;
+    for (const ex of w.exercises) {
+      lines.push([
+        date,
+        csvEscape(ex.name || ''),
+        csvEscape(ex.note || ''),
+        csvEscape(ex.sets || ''),
+        csvEscape(ex.weight || ''),
+      ].join(','));
+    }
+  }
+  return lines.join('\n');
+}
+
+function exportAllWorkoutsCsv() {
+  const dates = Object.keys(state.workouts).filter(d => {
+    const w = state.workouts[d];
+    return w && w.enabled && w.exercises && w.exercises.length;
+  });
+  if (!dates.length) {
+    toast('Brak treningów do eksportu', 'error');
+    return;
+  }
+  const csv = buildWorkoutCsv(dates);
+  if (csv.split('\n').length <= 1) {
+    toast('Brak treningów do eksportu', 'error');
+    return;
+  }
+  const today = todayStr();
+  downloadCsv(`treningi_wszystko_${today}.csv`, csv);
+  toast(`Wyeksportowano ${dates.length} treningów`, 'success');
+}
+
+function exportWorkoutDay(date) {
+  const w = state.workouts[date];
+  if (!w || !w.enabled || !w.exercises || !w.exercises.length) {
+    toast('Ten dzień nie ma treningu', 'error');
+    return false;
+  }
+  const csv = buildWorkoutCsv([date]);
+  downloadCsv(`trening_${date}.csv`, csv);
+  return true;
 }
 
 function renderResults(products) {
@@ -1970,6 +2546,7 @@ function nutrientsFor(product, grams) {
 }
 
 function openSheet(product) {
+  state.editingIndex = null;
   state.selectedProduct = product;
   state.selectedMeal = guessMeal();
   const name = product.product_name_pl || product.product_name;
@@ -1981,6 +2558,7 @@ function openSheet(product) {
   setActiveQuick(100);
   setActiveMeal(state.selectedMeal);
   updatePreview();
+  $('confirmBtn').textContent = 'Dodaj';
   $('sheetDim').classList.add('show');
   requestAnimationFrame(() => $('sheet').classList.add('show'));
 }
@@ -1995,6 +2573,8 @@ function closeSheet() {
   $('sheet').classList.remove('show');
   setTimeout(() => $('sheetDim').classList.remove('show'), 250);
   state.selectedProduct = null;
+  state.editingIndex = null;
+  $('confirmBtn').textContent = 'Dodaj';
 }
 
 function setActiveQuick(val) {
@@ -2015,12 +2595,24 @@ function addToDay() {
   if (!grams || grams <= 0) return;
   const p = state.selectedProduct;
   const n = nutrientsFor(p, grams);
-  getDay(state.currentDate).push({
-    name: p.product_name_pl || p.product_name,
-    grams,
-    meal: state.selectedMeal,
-    ...n,
-  });
+  const items = getDay(state.currentDate);
+  if (state.editingIndex != null && items[state.editingIndex]) {
+    items[state.editingIndex] = {
+      ...items[state.editingIndex],
+      name: p.product_name_pl || p.product_name,
+      grams,
+      meal: state.selectedMeal,
+      ...n,
+    };
+    toast('Zaktualizowano', 'success');
+  } else {
+    items.push({
+      name: p.product_name_pl || p.product_name,
+      grams,
+      meal: state.selectedMeal,
+      ...n,
+    });
+  }
   save();
   closeSheet();
   // wyczyść wyszukiwanie
@@ -2103,8 +2695,9 @@ document.querySelectorAll('#mealPicker button').forEach(btn => {
   });
 });
 
-// CSV export button
+// CSV export buttons
 $('exportCsvBtn').addEventListener('click', exportAllCsv);
+$('exportWoCsvBtn').addEventListener('click', exportAllWorkoutsCsv);
 
 // Lidl filter chip
 $('lidlChip').addEventListener('click', () => {
@@ -2130,6 +2723,32 @@ $('customLidlToggle').addEventListener('click', () => {
 });
 $('customCancelBtn').addEventListener('click', closeCustomSheet);
 $('customSheetDim').addEventListener('click', closeCustomSheet);
+
+// Workout
+$('workoutToggle').addEventListener('click', (e) => {
+  e.preventDefault();
+  toggleWorkout();
+});
+$('workoutEnabled').addEventListener('change', () => {
+  const w = getWorkout(state.currentDate);
+  w.enabled = $('workoutEnabled').checked;
+  saveWorkouts();
+  renderWorkout();
+});
+document.querySelectorAll('.wo-preset').forEach(btn => {
+  btn.addEventListener('click', () => loadWorkoutPreset(btn.dataset.preset));
+});
+$('workoutAdd').addEventListener('click', addBlankExercise);
+$('workoutExportBtn').addEventListener('click', () => {
+  // Eksport tylko bieżącego dnia, jeśli ma trening; inaczej wszystkie
+  const w = state.workouts[state.currentDate];
+  if (w && w.enabled && w.exercises && w.exercises.length) {
+    exportWorkoutDay(state.currentDate);
+    toast('Eksport treningu dziennego', 'success');
+  } else {
+    exportAllWorkoutsCsv();
+  }
+});
 
 // === INIT ===
 renderCalendar();
