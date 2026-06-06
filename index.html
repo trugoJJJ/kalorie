@@ -1494,6 +1494,94 @@
     color: var(--accent) !important;
     border: 1.5px dashed var(--accent) !important;
   }
+  /* Daily targets */
+  .targets-card {
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 12px 14px;
+    margin: 10px 16px 6px;
+    box-shadow: var(--shadow-xs);
+    border: 1px solid var(--hair);
+  }
+  .targets-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    gap: 10px;
+    user-select: none;
+  }
+  .targets-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .targets-title svg { color: var(--accent); }
+  .targets-toggle-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--subtle);
+    transition: transform 0.2s;
+  }
+  .targets-card.open .targets-toggle-icon { transform: rotate(180deg); }
+  .targets-body { display: none; margin-top: 12px; }
+  .targets-card.open .targets-body { display: block; }
+  .targets-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .target-field {
+    background: var(--bg);
+    border: 1px solid var(--hair);
+    border-radius: 10px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .target-field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    flex: 1;
+  }
+  .target-field input {
+    width: 70px;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    text-align: right;
+  }
+  .target-field.kcal {
+    grid-column: 1 / -1;
+    background: var(--accent-soft);
+    border-color: var(--accent-soft);
+  }
+  .target-field.kcal label { color: var(--accent); }
+  /* Status colors for calendar cells */
+  .cal-cell.status-red { background: #F9DDE0; }
+  .cal-cell.status-red .k { color: #C13B4D; }
+  .cal-cell.status-orange { background: #FBE8D2; }
+  .cal-cell.status-orange .k { color: #C76A1E; }
+  .cal-cell.status-green { background: #DCF1E4; }
+  .cal-cell.status-green .k { color: #2EAA5C; }
+  .cal-cell.today.status-red { box-shadow: inset 0 0 0 2px #C13B4D; }
+  .cal-cell.today.status-orange { box-shadow: inset 0 0 0 2px #C76A1E; }
+  .cal-cell.today.status-green { box-shadow: inset 0 0 0 2px #2EAA5C; }
+  .avg-status-red { color: #C13B4D !important; }
+  .avg-status-orange { color: #C76A1E !important; }
+  .avg-status-green { color: #2EAA5C !important; }
 </style>
 </head>
 <body>
@@ -1529,6 +1617,47 @@
       <div>Pn</div><div>Wt</div><div>Śr</div><div>Cz</div><div>Pt</div><div>Sb</div><div>Nd</div>
     </div>
     <div class="cal-grid" id="calGrid"></div>
+
+    <!-- DAILY TARGETS -->
+    <div class="targets-card" id="targetsCard">
+      <div class="targets-head" id="targetsHead">
+        <div class="targets-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          Dzienne cele
+        </div>
+        <svg class="targets-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="targets-body">
+        <div class="targets-grid">
+          <div class="target-field kcal">
+            <label>Kalorie</label>
+            <input type="number" id="tgtKcal" inputmode="numeric" min="0" placeholder="2000">
+            <small style="color:var(--subtle); font-size:11px;">kcal</small>
+          </div>
+          <div class="target-field">
+            <label>Białko</label>
+            <input type="number" id="tgtProtein" inputmode="numeric" min="0" placeholder="0">
+            <small style="color:var(--subtle); font-size:11px;">g</small>
+          </div>
+          <div class="target-field">
+            <label>Węgle</label>
+            <input type="number" id="tgtCarbs" inputmode="numeric" min="0" placeholder="0">
+            <small style="color:var(--subtle); font-size:11px;">g</small>
+          </div>
+          <div class="target-field">
+            <label>Tłuszcze</label>
+            <input type="number" id="tgtFat" inputmode="numeric" min="0" placeholder="0">
+            <small style="color:var(--subtle); font-size:11px;">g</small>
+          </div>
+          <div class="target-field">
+            <label>Błonnik</label>
+            <input type="number" id="tgtFiber" inputmode="numeric" min="0" placeholder="0">
+            <small style="color:var(--subtle); font-size:11px;">g</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="cal-foot">
       <div class="cal-summary">
         <div>
@@ -1852,6 +1981,7 @@ const WO_EXPORT_KEY = 'kalkulator-kalorii-last-wo-export';
 const CUSTOM_KEY = 'kalkulator-kalorii-custom-products';
 const WORKOUT_KEY = 'kalkulator-kalorii-workouts';
 const RECIPES_KEY = 'kalkulator-kalorii-recipes';
+const TARGETS_KEY = 'kalkulator-kalorii-targets';
 
 const WORKOUT_PRESETS = {
   gora: [
@@ -1901,6 +2031,7 @@ const state = {
   customProducts: JSON.parse(localStorage.getItem(CUSTOM_KEY) || '[]'),
   workouts: JSON.parse(localStorage.getItem(WORKOUT_KEY) || '{}'),
   recipes: JSON.parse(localStorage.getItem(RECIPES_KEY) || '[]'),
+  targets: Object.assign({ kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }, JSON.parse(localStorage.getItem(TARGETS_KEY) || '{}')),
   recipeDraft: { id: null, name: '', description: '', ingredients: [] },
   pendingRecipe: null,
   currentDate: null,
@@ -1917,6 +2048,16 @@ const state = {
 function saveCustom() { localStorage.setItem(CUSTOM_KEY, JSON.stringify(state.customProducts)); }
 function saveWorkouts() { localStorage.setItem(WORKOUT_KEY, JSON.stringify(state.workouts)); }
 function saveRecipes() { localStorage.setItem(RECIPES_KEY, JSON.stringify(state.recipes)); }
+function saveTargets() { localStorage.setItem(TARGETS_KEY, JSON.stringify(state.targets)); }
+function statusForRatio(actual, target) {
+  if (!target || target <= 0) return null;
+  const ratio = actual / target;
+  // distance from 1 (perfect = on target)
+  const dist = Math.abs(ratio - 1);
+  if (dist <= 0.10) return 'green';   // within ±10% → on target
+  if (dist <= 0.25) return 'orange';  // within ±25% → getting closer
+  return 'red';                        // > ±25% away
+}
 function getWorkout(date) {
   if (!state.workouts[date]) state.workouts[date] = { enabled: false, exercises: [] };
   return state.workouts[date];
@@ -1991,17 +2132,26 @@ function renderCalendar() {
       daysWith++;
     }
   }
-  $('avgVal').textContent = daysWith ? fmtNum(Math.round(sumKcal / daysWith)) : '—';
+  const avgKcal = daysWith ? Math.round(sumKcal / daysWith) : 0;
+  const avgEl = $('avgVal');
+  avgEl.textContent = daysWith ? fmtNum(avgKcal) : '—';
+  avgEl.classList.remove('avg-status-red','avg-status-orange','avg-status-green');
+  if (daysWith) {
+    const avgStatus = statusForRatio(avgKcal, state.targets.kcal);
+    if (avgStatus) avgEl.classList.add('avg-status-' + avgStatus);
+  }
 
   $('calGrid').innerHTML = cells.map(c => {
     const key = dateKey(c.y, c.m, c.d);
     const items = state.data[key];
     const kcal = items && items.length ? Math.round(dayTotals(items).kcal) : 0;
+    const status = (!c.other && kcal > 0) ? statusForRatio(kcal, state.targets.kcal) : null;
     const cls = [
       'cal-cell',
       c.other ? 'other' : '',
       (!c.other && kcal > 0) ? 'data' : '',
       (!c.other && key === today) ? 'today' : '',
+      status ? ('status-' + status) : '',
     ].filter(Boolean).join(' ');
     return `<button class="${cls}" data-key="${key}" data-other="${c.other}">
       <span class="d">${c.d}</span>
@@ -3594,6 +3744,33 @@ $('workoutExportBtn').addEventListener('click', () => {
     exportAllWorkoutsCsv();
   }
 });
+
+// === DAILY TARGETS ===
+function loadTargetsUI() {
+  $('tgtKcal').value = state.targets.kcal || '';
+  $('tgtProtein').value = state.targets.protein || '';
+  $('tgtCarbs').value = state.targets.carbs || '';
+  $('tgtFat').value = state.targets.fat || '';
+  $('tgtFiber').value = state.targets.fiber || '';
+}
+function bindTargetInput(id, key) {
+  const el = $(id);
+  el.addEventListener('input', () => {
+    const v = parseFloat(el.value);
+    state.targets[key] = isNaN(v) || v < 0 ? 0 : v;
+    saveTargets();
+    renderCalendar();
+  });
+}
+bindTargetInput('tgtKcal', 'kcal');
+bindTargetInput('tgtProtein', 'protein');
+bindTargetInput('tgtCarbs', 'carbs');
+bindTargetInput('tgtFat', 'fat');
+bindTargetInput('tgtFiber', 'fiber');
+$('targetsHead').addEventListener('click', () => {
+  $('targetsCard').classList.toggle('open');
+});
+loadTargetsUI();
 
 // === INIT ===
 renderCalendar();
