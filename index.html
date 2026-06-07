@@ -428,6 +428,27 @@
   </div>
 </div>
 
+<!-- COPY-FROM-DAY PICKER -->
+<div class="picker-overlay" id="copyFromDayPicker">
+  <div class="picker-sheet">
+    <div class="picker-head">
+      <div class="picker-title" id="copyFromDayTitle">Z dzisiejszych produktów</div>
+      <button class="picker-close" id="copyFromDayClose" aria-label="Zamknij">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="copyfromday-mode" id="copyFromDayMode">
+      <button data-mode="move" class="on">Przenieś</button>
+      <button data-mode="copy">Kopiuj</button>
+    </div>
+    <div id="copyFromDayList" class="copyfromday-list"></div>
+    <div class="sheet-actions" style="margin-top: 12px;">
+      <button class="cancel" id="copyFromDayCancel">Anuluj</button>
+      <button class="confirm" id="copyFromDayConfirm">Zastosuj</button>
+    </div>
+  </div>
+</div>
+
 <!-- RECIPE-TO-DAY PICKER -->
 <div class="picker-overlay" id="recipeToDayPicker">
   <div class="picker-sheet">
@@ -438,7 +459,23 @@
       </button>
     </div>
     <div id="recipeToDayContent" style="overflow-y:auto; flex:1;"></div>
-    <div class="field-lbl" style="margin-top:10px;">Posiłek</div>
+
+    <div class="field-lbl" style="margin-top:14px; display:flex; align-items:center; justify-content:space-between;">
+      <span>Porcja</span>
+      <span class="portion-readout" id="recipePortionReadout">100%</span>
+    </div>
+    <div class="portion-quick" id="recipePortionQuick">
+      <button data-pct="25">¼</button>
+      <button data-pct="33">⅓</button>
+      <button data-pct="50">½</button>
+      <button data-pct="66">⅔</button>
+      <button data-pct="75">¾</button>
+      <button data-pct="100" class="on">całość</button>
+    </div>
+    <input type="range" id="recipePortionRange" class="portion-range" min="5" max="200" step="5" value="100">
+    <div class="portion-summary" id="recipePortionSummary"></div>
+
+    <div class="field-lbl" style="margin-top:14px;">Posiłek</div>
     <div class="meal-picker" id="recipeMealPicker">
       <button data-meal="sniadanie">Śniadanie</button>
       <button data-meal="obiad" class="on">Obiad</button>
@@ -515,6 +552,10 @@ const state = {
   targets: Object.assign({ kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }, JSON.parse(localStorage.getItem(TARGETS_KEY) || '{}')),
   recipeDraft: { id: null, name: '', description: '', ingredients: [] },
   pendingRecipe: null,
+  pendingRecipePortion: 100,
+  copyFromDayTarget: null,
+  copyFromDayMode: 'move',
+  copyFromDayChecked: new Set(),
   currentDate: null,
   calMonth: new Date().getMonth(),
   calYear: new Date().getFullYear(),
@@ -823,6 +864,15 @@ function renderDay() {
           </div>`;
         }).join('')
       : `<div class="meal-empty">Brak produktów</div>`;
+    // count of items in OTHER meals (candidates for "z dziś")
+    const otherCount = items.length - list.length;
+    const copyBtn = otherCount > 0
+      ? `<button class="meal-copy" data-copy-from-day="${mt.id}" title="Przenieś/skopiuj z innych posiłków">
+           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+           Z dziś
+           <span class="meal-copy-count">${otherCount}</span>
+         </button>`
+      : '';
     return `
       <div class="meal" data-meal="${mt.id}">
         <div class="meal-h">
@@ -830,6 +880,7 @@ function renderDay() {
           <span class="mh-k">${fmtNum(Math.round(kcal))} kcal</span>
         </div>
         ${body}
+        ${copyBtn}
       </div>
     `;
   }).join('');
@@ -847,6 +898,12 @@ function renderDay() {
       items.splice(+btn.dataset.rm, 1);
       save();
       renderDay();
+    });
+  });
+  $('mealsWrap').querySelectorAll('button[data-copy-from-day]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openCopyFromDayPicker(btn.dataset.copyFromDay);
     });
   });
 
@@ -1608,6 +1665,103 @@ function renderIngredientPickerList(filter) {
   });
 }
 
+// === PRZYPISYWANIE PRODUKTÓW Z INNYCH POSIŁKÓW DNIA ===
+function openCopyFromDayPicker(targetMeal) {
+  state.copyFromDayTarget = targetMeal;
+  state.copyFromDayMode = 'move';
+  state.copyFromDayChecked = new Set();
+  const label = (MEAL_TYPES.find(m => m.id === targetMeal) || {}).label || '';
+  $('copyFromDayTitle').textContent = `→ ${label}`;
+  // reset mode buttons
+  document.querySelectorAll('#copyFromDayMode button').forEach(b => {
+    b.classList.toggle('on', b.dataset.mode === 'move');
+  });
+  renderCopyFromDayList();
+  $('copyFromDayPicker').classList.add('show');
+}
+function closeCopyFromDayPicker() {
+  $('copyFromDayPicker').classList.remove('show');
+  state.copyFromDayTarget = null;
+  state.copyFromDayChecked = new Set();
+}
+function renderCopyFromDayList() {
+  const target = state.copyFromDayTarget;
+  if (!target) return;
+  const items = getDay(state.currentDate);
+  const candidates = items
+    .map((it, idx) => ({ it, idx }))
+    .filter(x => (x.it.meal || 'inne') !== target);
+  const wrap = $('copyFromDayList');
+  if (!candidates.length) {
+    wrap.innerHTML = '<div class="copyfromday-empty">Brak produktów w innych posiłkach dziś.</div>';
+    return;
+  }
+  // grupowanie po posiłku
+  const byMeal = {};
+  candidates.forEach(c => {
+    const m = c.it.meal || 'inne';
+    (byMeal[m] = byMeal[m] || []).push(c);
+  });
+  const checked = state.copyFromDayChecked;
+  wrap.innerHTML = MEAL_TYPES
+    .filter(mt => byMeal[mt.id])
+    .map(mt => `
+      <div class="cfd-group">
+        <div class="cfd-group-h">${mt.label}</div>
+        ${byMeal[mt.id].map(c => {
+          const it = c.it;
+          const isChecked = checked.has(c.idx);
+          return `
+            <label class="cfd-row ${isChecked ? 'on' : ''}" data-cfd-idx="${c.idx}">
+              <input type="checkbox" ${isChecked ? 'checked' : ''} data-cfd-cb="${c.idx}">
+              <span class="cfd-info">
+                <span class="cfd-name">${escapeHtml(it.name)}</span>
+                <span class="cfd-meta">${Math.round(it.grams)} g · ${Math.round(it.kcal)} kcal</span>
+              </span>
+            </label>
+          `;
+        }).join('')}
+      </div>
+    `).join('');
+  // bind
+  wrap.querySelectorAll('input[data-cfd-cb]').forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      const i = +cb.dataset.cfdCb;
+      if (cb.checked) state.copyFromDayChecked.add(i);
+      else state.copyFromDayChecked.delete(i);
+      const row = cb.closest('.cfd-row');
+      if (row) row.classList.toggle('on', cb.checked);
+      $('copyFromDayConfirm').textContent = state.copyFromDayChecked.size
+        ? `Zastosuj (${state.copyFromDayChecked.size})`
+        : 'Zastosuj';
+    });
+  });
+}
+function confirmCopyFromDay() {
+  const target = state.copyFromDayTarget;
+  if (!target) return;
+  const checked = Array.from(state.copyFromDayChecked || []);
+  if (!checked.length) { closeCopyFromDayPicker(); return; }
+  const items = getDay(state.currentDate);
+  const mode = state.copyFromDayMode || 'move';
+  // Najpierw zbierz kopie zaznaczonych (przed potencjalnym usunięciem indeksów)
+  const additions = checked.map(i => {
+    const src = items[i];
+    return { ...src, meal: target };
+  });
+  if (mode === 'move') {
+    // sortuj malejąco, żeby splice nie psuł indeksów
+    checked.sort((a, b) => b - a).forEach(i => items.splice(i, 1));
+  }
+  items.push(...additions);
+  save();
+  closeCopyFromDayPicker();
+  renderDay();
+  const verb = mode === 'move' ? 'Przeniesiono' : 'Skopiowano';
+  const label = (MEAL_TYPES.find(m => m.id === target) || {}).label || '';
+  toast(`${verb} ${additions.length} ${additions.length === 1 ? 'produkt' : 'produkty'} → ${label}`, 'success');
+}
+
 // === DODAWANIE PRZEPISU DO DNIA ===
 function openRecipeToDayPicker(recipeId) {
   const r = state.recipes.find(x => x.id === recipeId);
@@ -1639,11 +1793,33 @@ function openRecipeToDayPicker(recipeId) {
   document.querySelectorAll('#recipeMealPicker button').forEach(b => {
     b.classList.toggle('on', b.dataset.meal === 'obiad');
   });
+  // Reset porcji do 100% i odśwież podsumowanie
+  state.pendingRecipePortion = 100;
+  $('recipePortionRange').value = 100;
+  document.querySelectorAll('#recipePortionQuick button').forEach(b => {
+    b.classList.toggle('on', +b.dataset.pct === 100);
+  });
+  updateRecipePortionUi();
   $('recipeToDayPicker').classList.add('show');
 }
 function closeRecipeToDayPicker() {
   $('recipeToDayPicker').classList.remove('show');
   state.pendingRecipe = null;
+}
+function updateRecipePortionUi() {
+  const r = state.pendingRecipe;
+  if (!r) return;
+  const pct = Math.max(1, Math.min(500, +state.pendingRecipePortion || 100));
+  const t = r.totals || recipeTotalsOf(r);
+  const totalGrams = r.ingredients.reduce((s, ing) => s + (ing.grams || 0), 0);
+  const f = pct / 100;
+  $('recipePortionReadout').textContent = `${pct}%`;
+  $('recipePortionSummary').innerHTML =
+    `<b>${Math.round((t.kcal || 0) * f)}</b> kcal · ` +
+    `B ${((t.protein || 0) * f).toFixed(1)} g · ` +
+    `W ${((t.carbs || 0) * f).toFixed(1)} g · ` +
+    `T ${((t.fat || 0) * f).toFixed(1)} g · ` +
+    `${Math.round(totalGrams * f)} g porcji`;
 }
 function recipeTotalsOf(r) {
   return r.ingredients.reduce((a, it) => ({
@@ -1664,18 +1840,22 @@ function confirmRecipeToDay() {
   // Składniki zachowujemy w polu _ingredients (do podglądu w przyszłości).
   const t = r.totals || recipeTotalsOf(r);
   const totalGrams = r.ingredients.reduce((s, ing) => s + (ing.grams || 0), 0);
+  const pct = Math.max(1, Math.min(500, +state.pendingRecipePortion || 100));
+  const f = pct / 100;
+  const portionName = pct === 100 ? r.name : `${r.name} (${pct}%)`;
   items.push({
-    name: r.name,
-    grams: Math.round(totalGrams),
+    name: portionName,
+    grams: Math.round(totalGrams * f),
     meal,
-    kcal: t.kcal || 0,
-    protein: t.protein || 0,
-    carbs: t.carbs || 0,
-    fat: t.fat || 0,
-    fiber: t.fiber || 0,
+    kcal: (t.kcal || 0) * f,
+    protein: (t.protein || 0) * f,
+    carbs: (t.carbs || 0) * f,
+    fat: (t.fat || 0) * f,
+    fiber: (t.fiber || 0) * f,
     _fromRecipe: r.id,
+    _portionPct: pct,
     _ingredients: r.ingredients.map(i => ({
-      name: i.name, grams: i.grams,
+      name: i.name, grams: (i.grams || 0) * f,
     })),
   });
   save();
@@ -1686,7 +1866,7 @@ function confirmRecipeToDay() {
   $('searchHint').classList.remove('show');
   $('results').innerHTML = '';
   renderDay();
-  toast(`Dodano „${r.name}" · ${Math.round(t.kcal)} kcal`, 'success');
+  toast(`Dodano „${portionName}" · ${Math.round((t.kcal || 0) * f)} kcal`, 'success');
 }
 
 // === CSV IMPORT ===
@@ -2379,6 +2559,21 @@ $('ingredientPicker').addEventListener('click', (e) => {
   if (e.target === $('ingredientPicker')) closeIngredientPicker();
 });
 
+// Copy-from-day picker
+$('copyFromDayClose').addEventListener('click', closeCopyFromDayPicker);
+$('copyFromDayCancel').addEventListener('click', closeCopyFromDayPicker);
+$('copyFromDayConfirm').addEventListener('click', confirmCopyFromDay);
+$('copyFromDayPicker').addEventListener('click', (e) => {
+  if (e.target === $('copyFromDayPicker')) closeCopyFromDayPicker();
+});
+document.querySelectorAll('#copyFromDayMode button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#copyFromDayMode button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    state.copyFromDayMode = btn.dataset.mode;
+  });
+});
+
 // Recipe -> day picker
 $('recipeToDayClose').addEventListener('click', closeRecipeToDayPicker);
 $('recipeToDayCancel').addEventListener('click', closeRecipeToDayPicker);
@@ -2391,6 +2586,26 @@ document.querySelectorAll('#recipeMealPicker button').forEach(btn => {
     document.querySelectorAll('#recipeMealPicker button').forEach(b => b.classList.remove('on'));
     btn.classList.add('on');
   });
+});
+
+// Recipe portion (% obiadu)
+document.querySelectorAll('#recipePortionQuick button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const pct = +btn.dataset.pct;
+    state.pendingRecipePortion = pct;
+    $('recipePortionRange').value = pct;
+    document.querySelectorAll('#recipePortionQuick button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    updateRecipePortionUi();
+  });
+});
+$('recipePortionRange').addEventListener('input', (e) => {
+  const pct = +e.target.value;
+  state.pendingRecipePortion = pct;
+  document.querySelectorAll('#recipePortionQuick button').forEach(b => {
+    b.classList.toggle('on', +b.dataset.pct === pct);
+  });
+  updateRecipePortionUi();
 });
 
 // Workout
