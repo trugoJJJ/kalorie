@@ -3,1660 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#EDF4EC">
+<meta name="theme-color" content="#DDF1C4">
 <title>Kalkulator Kalorii</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<style>
-  :root {
-    --bg: #EDF4EC;
-    --surface: #FFFFFF;
-    --text: #0B0D14;
-    --muted: #46584B;
-    --subtle: #8AA08F;
-    --accent: #2EAA5C;
-    --accent-soft: #E2F2E6;
-    --accent-fg: #0B0D14;
-    --chip: #E2EEE1;
-    --hair: #E6F0E5;
-    --cta: #6CE992;
-    --cta-fg: #0B0D14;
-    --cta-shadow: rgba(63,203,120,0.45);
-    --rm-bg: #F6E4DE;
-    --rm-fg: #993049;
-    --shadow: 0 6px 20px rgba(36,72,48,0.08);
-    --shadow-xs: 0 1px 3px rgba(36,72,48,0.06);
-    --shadow-focus: 0 0 0 4px rgba(46,170,92,0.16);
-    --mc-protein: #4A60F5;
-    --mc-carbs: #3FCB78;
-    --mc-fat: #E8B06A;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; overflow: hidden; }
-  body {
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    overscroll-behavior: none;
-    -webkit-font-smoothing: antialiased;
-    letter-spacing: 0.005em;
-  }
-  #app {
-    max-width: 480px;
-    margin: 0 auto;
-    height: 100vh;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    background: var(--bg);
-    position: relative;
-    overflow: hidden;
-  }
-  .view {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .hidden { display: none !important; }
 
-  /* ===== TOPBAR ===== */
-  .topbar {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 18px 22px 14px;
-    padding-top: max(18px, calc(env(safe-area-inset-top) + 8px));
-  }
-  .iconbtn {
-    width: 40px;
-    height: 40px;
-    border-radius: 999px;
-    background: var(--chip);
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    flex: 0 0 auto;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
-  }
-  .iconbtn:active { background: #d4e3d3; transform: scale(0.94); }
-  .tb-title { display: flex; flex-direction: column; line-height: 1.1; }
-  .tb-title .t { font-size: 21px; font-weight: 600; letter-spacing: -0.02em; }
-  .tb-title .s { font-size: 13px; font-weight: 500; color: var(--subtle); margin-top: 3px; }
-
-  /* ===== CALENDAR ===== */
-  .cal-head {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    padding: 8px 26px 18px;
-  }
-  .cal-head .month {
-    font-size: 26px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    text-transform: capitalize;
-    line-height: 1;
-  }
-  .cal-head .year {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--subtle);
-    margin-left: 8px;
-  }
-  .cal-nav { display: flex; gap: 8px; }
-  .cal-nav button {
-    width: 38px;
-    height: 38px;
-    border-radius: 999px;
-    border: none;
-    background: var(--chip);
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-  .cal-nav button:active { background: #d4e3d3; }
-  .cal-nav button.accent {
-    background: var(--accent);
-    color: white;
-  }
-  .cal-nav button.accent:active { background: #258a4b; }
-  .cal-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    padding: 0 18px;
-    gap: 2px;
-  }
-  .cal-weekdays div {
-    text-align: center;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--subtle);
-    letter-spacing: 0.06em;
-    padding-bottom: 8px;
-  }
-  .cal-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
-    padding: 0 18px;
-  }
-  .cal-cell {
-    aspect-ratio: 1;
-    border-radius: 14px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    background: transparent;
-    border: none;
-    font-family: inherit;
-    cursor: pointer;
-    color: var(--text);
-    transition: transform 0.1s;
-  }
-  .cal-cell:active { transform: scale(0.92); }
-  .cal-cell .d { font-size: 15px; font-weight: 500; }
-  .cal-cell .k { font-size: 9.5px; font-weight: 600; letter-spacing: 0.02em; }
-  .cal-cell.other { opacity: 0.32; }
-  .cal-cell.data { background: var(--accent-soft); }
-  .cal-cell.data .k { color: var(--accent); }
-  .cal-cell.today { background: var(--accent); }
-  .cal-cell.today .d { color: var(--accent-fg); font-weight: 700; }
-  .cal-cell.today .k { color: var(--accent-fg); opacity: 0.85; }
-  .cal-foot {
-    margin: 22px 18px 24px;
-  }
-  .cal-summary {
-    background: var(--surface);
-    border-radius: 18px;
-    padding: 16px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: var(--shadow);
-  }
-  .cal-summary .lbl {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--subtle);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .cal-summary .val {
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    margin-top: 3px;
-  }
-  .cal-summary .val small {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--subtle);
-  }
-  .cal-dot { width: 10px; height: 10px; border-radius: 3px; }
-
-  /* ===== DAY ===== */
-  .day-body {
-    padding: 0 18px 28px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .hero {
-    background: var(--surface);
-    border-radius: 22px;
-    padding: 22px 22px 20px;
-    box-shadow: var(--shadow);
-  }
-  .hero .kcal-big {
-    font-size: 52px;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1;
-  }
-  .hero .kcal-lbl {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--subtle);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-top: 4px;
-  }
-  .macrobar {
-    display: flex;
-    height: 8px;
-    border-radius: 999px;
-    overflow: hidden;
-    margin-top: 18px;
-    gap: 3px;
-    background: var(--hair);
-  }
-  .macrobar span {
-    display: block;
-    height: 100%;
-    border-radius: 999px;
-  }
-  .macrolegend {
-    display: flex;
-    gap: 16px;
-    margin-top: 12px;
-    flex-wrap: wrap;
-  }
-  .macrolegend .ml {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11.5px;
-    font-weight: 500;
-    color: var(--muted);
-  }
-  .macrolegend .ml b { font-weight: 600; color: var(--text); }
-  .macrolegend .dot { width: 9px; height: 9px; border-radius: 3px; }
-
-  .macros {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-  }
-  .macro {
-    background: var(--surface);
-    border-radius: 16px;
-    padding: 13px 6px;
-    text-align: center;
-    box-shadow: var(--shadow-xs);
-  }
-  .macro .mv {
-    font-size: 17px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-  }
-  .macro .mv small {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--subtle);
-  }
-  .macro .mn {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--subtle);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin-top: 3px;
-  }
-
-  /* ===== SEARCH (inline) ===== */
-  .search-wrap { padding: 4px 0 0; }
-  .search-field {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface);
-    border: 1.5px solid var(--hair);
-    border-radius: 14px;
-    padding: 13px 16px;
-    box-shadow: var(--shadow-xs);
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .search-field:focus-within {
-    border-color: var(--accent);
-    box-shadow: var(--shadow-focus);
-  }
-  .search-field svg { color: var(--subtle); flex: 0 0 auto; }
-  .search-field:focus-within svg { color: var(--accent); }
-  .search-field input {
-    flex: 1 1 auto;
-    border: none;
-    outline: none;
-    background: transparent;
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text);
-    min-width: 0;
-  }
-  .search-field input::placeholder { color: var(--subtle); }
-  .scan-btn {
-    border: none;
-    background: var(--accent);
-    color: white;
-    width: 30px;
-    height: 30px;
-    border-radius: 999px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-right: 2px;
-  }
-  .scan-btn:active { background: #258a4b; }
-  .filter-row {
-    display: flex;
-    gap: 6px;
-    margin-top: 8px;
-    flex-wrap: wrap;
-  }
-  .filter-chip {
-    background: var(--chip);
-    border: none;
-    color: var(--muted);
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 999px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .filter-chip.on {
-    background: var(--accent);
-    color: white;
-  }
-  .filter-chip .lidl-mark {
-    background: #FFE100;
-    color: #0050AA;
-    font-weight: 800;
-    font-size: 9px;
-    padding: 1px 4px;
-    border-radius: 3px;
-    letter-spacing: 0.5px;
-  }
-  .filter-chip.on .lidl-mark { background: white; }
-
-  /* ===== SCANNER MODAL ===== */
-  .scanner-overlay {
-    position: fixed;
-    inset: 0;
-    background: #000;
-    z-index: 200;
-    display: none;
-    flex-direction: column;
-  }
-  .scanner-overlay.show { display: flex; }
-  .scanner-head {
-    color: white;
-    padding: 18px 20px;
-    padding-top: max(18px, calc(env(safe-area-inset-top) + 8px));
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(0,0,0,0.4);
-    z-index: 2;
-  }
-  .scanner-head h2 {
-    font-size: 16px;
-    font-weight: 600;
-  }
-  .scanner-close {
-    background: rgba(255,255,255,0.2);
-    border: none;
-    color: white;
-    width: 36px;
-    height: 36px;
-    border-radius: 999px;
-    cursor: pointer;
-    font-size: 1.3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  #scannerReader {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-  }
-  #scannerReader video { width: 100% !important; height: 100% !important; object-fit: cover; }
-  .scanner-hint {
-    color: white;
-    text-align: center;
-    padding: 16px 20px;
-    padding-bottom: calc(16px + env(safe-area-inset-bottom));
-    background: rgba(0,0,0,0.4);
-    font-size: 14px;
-    font-weight: 500;
-  }
-  .scanner-status {
-    margin-top: 6px;
-    font-size: 12px;
-    color: var(--cta);
-    font-weight: 600;
-  }
-
-  /* ===== TOAST ===== */
-  .toast {
-    position: fixed;
-    left: 50%;
-    bottom: calc(20px + env(safe-area-inset-bottom));
-    transform: translateX(-50%) translateY(120%);
-    background: var(--text);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 600;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-    z-index: 300;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    max-width: 90vw;
-    text-align: center;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.success { background: var(--accent); }
-  .toast.error { background: #C53030; }
-
-  /* ===== SCAN FEEDBACK ===== */
-  .scan-feedback {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    z-index: 3;
-    padding: 24px;
-  }
-  .scan-feedback-card {
-    background: white;
-    border-radius: 22px;
-    padding: 22px 24px 20px;
-    text-align: center;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-    transform: scale(0.85);
-    opacity: 0;
-    transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), opacity 0.2s;
-    pointer-events: auto;
-    width: 100%;
-    max-width: 340px;
-  }
-  .scan-feedback.show .scan-feedback-card {
-    transform: scale(1);
-    opacity: 1;
-  }
-  .scan-feedback-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 12px;
-    color: white;
-    font-size: 32px;
-    font-weight: 700;
-  }
-  .scan-feedback.success .scan-feedback-icon {
-    background: var(--accent);
-    box-shadow: 0 8px 24px rgba(46,170,92,0.45);
-  }
-  .scan-feedback.error .scan-feedback-icon {
-    background: #DC2626;
-    box-shadow: 0 8px 24px rgba(220,38,38,0.45);
-  }
-  .scan-feedback-title {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 4px;
-    letter-spacing: -0.01em;
-  }
-  .scan-feedback.success .scan-feedback-title { color: var(--accent); }
-  .scan-feedback.error .scan-feedback-title { color: #B91C1C; }
-  .scan-feedback-text {
-    font-size: 13px;
-    color: var(--subtle);
-    margin-bottom: 14px;
-  }
-  .scan-feedback-text strong {
-    color: var(--text);
-    font-weight: 600;
-  }
-  .scan-feedback-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 14px;
-  }
-  .scan-feedback-actions button {
-    flex: 1;
-    border: none;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 11px;
-    border-radius: 10px;
-    cursor: pointer;
-  }
-  .scan-feedback-actions .secondary {
-    background: var(--chip);
-    color: var(--muted);
-  }
-  .scan-feedback-actions .primary {
-    background: var(--accent);
-    color: white;
-  }
-  .scanner-frame {
-    position: absolute;
-    inset: 60px 24px 100px;
-    border: 3px solid rgba(255,255,255,0.35);
-    border-radius: 16px;
-    pointer-events: none;
-    z-index: 1;
-    transition: border-color 0.2s;
-  }
-  .scanner-overlay.flash-success .scanner-frame { border-color: var(--accent); box-shadow: 0 0 0 9999px rgba(46,170,92,0.18) inset; }
-  .scanner-overlay.flash-error .scanner-frame { border-color: #DC2626; box-shadow: 0 0 0 9999px rgba(220,38,38,0.18) inset; }
-
-  /* ===== CUSTOM PRODUCT SHEET ===== */
-  .custom-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 4px;
-  }
-  .custom-grid.full { grid-template-columns: 1fr; }
-  .custom-field { display: flex; flex-direction: column; }
-  .custom-field label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--subtle);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 5px;
-  }
-  .custom-field input {
-    background: var(--bg);
-    border: 1.5px solid var(--hair);
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 500;
-    outline: none;
-    color: var(--text);
-    -webkit-appearance: none;
-    appearance: none;
-    -moz-appearance: textfield;
-    transition: border-color 0.15s;
-  }
-  .custom-field input:focus { border-color: var(--accent); }
-  .custom-field input::-webkit-outer-spin-button,
-  .custom-field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  .custom-section-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--muted);
-    margin: 16px 0 8px;
-  }
-  .custom-section-title small {
-    color: var(--subtle);
-    font-weight: 500;
-    text-transform: none;
-    letter-spacing: 0;
-  }
-  .custom-barcode-note {
-    background: var(--accent-soft);
-    color: var(--accent);
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    text-align: center;
-  }
-  .add-custom-chip {
-    background: var(--chip);
-    border: 1.5px dashed var(--subtle);
-    color: var(--muted);
-  }
-  .add-custom-chip:active { background: var(--accent-soft); }
-
-  /* === LIDL TOGGLE W CUSTOM SHEET === */
-  .lidl-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    background: var(--bg);
-    border: 1.5px solid var(--hair);
-    border-radius: 12px;
-    padding: 12px 14px;
-    cursor: pointer;
-    margin-top: 6px;
-    transition: border-color 0.15s, background 0.15s;
-  }
-  .lidl-toggle.on {
-    border-color: var(--accent);
-    background: var(--accent-soft);
-  }
-  .lidl-toggle-label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-  }
-  .lidl-toggle .lidl-mark-big {
-    background: #FFE100;
-    color: #0050AA;
-    font-weight: 800;
-    font-size: 11px;
-    padding: 3px 7px;
-    border-radius: 4px;
-    letter-spacing: 0.5px;
-  }
-  .lidl-toggle-sub {
-    font-size: 11px;
-    color: var(--subtle);
-    font-weight: 500;
-    margin-top: 2px;
-  }
-  .switch {
-    position: relative;
-    width: 44px;
-    height: 26px;
-    background: var(--chip);
-    border-radius: 999px;
-    flex-shrink: 0;
-    transition: background 0.15s;
-  }
-  .switch::after {
-    content: '';
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .lidl-toggle.on .switch { background: var(--accent); }
-  .lidl-toggle.on .switch::after { transform: translateX(18px); }
-
-  /* === PRODUCT CARD CUSTOM TAG === */
-  .pc-tag {
-    display: inline-block;
-    background: var(--accent-soft);
-    color: var(--accent);
-    font-size: 9.5px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 5px;
-    margin-right: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    vertical-align: middle;
-  }
-  .pc-tag.pc-tag-lidl {
-    background: #FFE100;
-    color: #0050AA;
-  }
-  .search-clear {
-    background: var(--chip);
-    border: none;
-    color: var(--muted);
-    width: 22px;
-    height: 22px;
-    border-radius: 999px;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-  .search-clear.show { display: flex; }
-  .search-hint {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--subtle);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 4px 4px 0;
-    display: none;
-  }
-  .search-hint.show { display: block; }
-  .results {
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-    margin-top: 4px;
-  }
-  .prod-card {
-    background: var(--surface);
-    border-radius: 14px;
-    padding: 13px 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    box-shadow: var(--shadow-xs);
-    cursor: pointer;
-    transition: transform 0.1s;
-  }
-  .prod-card:active { transform: scale(0.98); }
-  .pc-info { flex: 1 1 auto; min-width: 0; }
-  .pc-name {
-    font-size: 14px;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .pc-meta {
-    font-size: 12px;
-    color: var(--subtle);
-    margin-top: 2px;
-  }
-  .pc-add {
-    width: 34px;
-    height: 34px;
-    border-radius: 999px;
-    background: var(--accent-soft);
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
-  }
-
-  /* ===== MEALS ===== */
-  .meals-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .meal-picker {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-  }
-  .meal-picker button {
-    border: none;
-    background: var(--chip);
-    color: var(--muted);
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 9px 6px;
-    border-radius: 12px;
-    cursor: pointer;
-  }
-  .meal-picker button.on {
-    background: var(--accent);
-    color: white;
-  }
-  /* ===== MEAL LIST ===== */
-  .meal-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 4px 4px 8px;
-    margin-top: 4px;
-  }
-  .meal-head .mh-l {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-  }
-  .meal-head .mh-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: var(--accent);
-  }
-  .meal-head .mh-name {
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-  }
-  .meal-head .mh-kcal {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--subtle);
-  }
-  .meal-head .mh-clear {
-    background: none;
-    border: none;
-    font-family: inherit;
-    color: var(--rm-fg);
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 4px 6px;
-  }
-  .meal-card {
-    background: var(--surface);
-    border-radius: 18px;
-    box-shadow: var(--shadow);
-    overflow: hidden;
-  }
-  .meal-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 13px 16px;
-    border-bottom: 1px solid var(--hair);
-  }
-  .meal-item:last-child { border-bottom: none; }
-  .mi-info { flex: 1 1 auto; min-width: 0; }
-  .mi-name {
-    font-size: 14px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .mi-meta {
-    font-size: 12px;
-    color: var(--subtle);
-    margin-top: 1px;
-  }
-  .mi-kcal {
-    font-size: 14px;
-    font-weight: 600;
-    flex: 0 0 auto;
-  }
-  .mi-rm {
-    width: 26px;
-    height: 26px;
-    border-radius: 999px;
-    background: var(--rm-bg);
-    color: var(--rm-fg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
-    border: none;
-    cursor: pointer;
-  }
-  .empty-meal {
-    padding: 18px 16px;
-    font-size: 13px;
-    color: var(--subtle);
-    text-align: center;
-  }
-  .loader {
-    text-align: center;
-    padding: 22px;
-    color: var(--subtle);
-    font-size: 13px;
-  }
-  .spinner {
-    width: 24px;
-    height: 24px;
-    border: 2.5px solid var(--hair);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 8px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ===== MODAL SHEET ===== */
-  .sheet-dim {
-    position: fixed;
-    inset: 0;
-    background: rgba(11, 13, 20, 0.42);
-    backdrop-filter: blur(2px);
-    display: none;
-    z-index: 90;
-  }
-  .sheet-dim.show { display: block; animation: fadeIn 0.2s; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  .sheet {
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%) translateY(100%);
-    bottom: 0;
-    width: 100%;
-    max-width: 480px;
-    background: var(--surface);
-    border-radius: 26px 26px 0 0;
-    padding: 22px 22px 26px;
-    padding-bottom: calc(26px + env(safe-area-inset-bottom));
-    box-shadow: 0 -10px 40px rgba(11, 13, 20, 0.18);
-    z-index: 100;
-    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .sheet.show { transform: translateX(-50%) translateY(0); }
-  .grab {
-    width: 38px;
-    height: 4px;
-    border-radius: 999px;
-    background: var(--hair);
-    margin: -6px auto 14px;
-  }
-  .s-title {
-    font-size: 18px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    text-align: center;
-  }
-  .s-sub {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--subtle);
-    text-align: center;
-    margin-top: 3px;
-    margin-bottom: 18px;
-  }
-  .field-lbl {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-  .grams {
-    display: flex;
-    align-items: baseline;
-    justify-content: center;
-    gap: 8px;
-    background: var(--bg);
-    border-radius: 14px;
-    padding: 14px;
-    border: 1.5px solid var(--accent);
-  }
-  .grams input {
-    background: transparent;
-    border: none;
-    outline: none;
-    font-family: inherit;
-    font-size: 30px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    text-align: center;
-    width: 110px;
-    color: var(--text);
-    -webkit-appearance: none;
-    appearance: none;
-    -moz-appearance: textfield;
-  }
-  .grams input::-webkit-outer-spin-button,
-  .grams input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  .grams .unit {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--subtle);
-  }
-  .quick {
-    display: flex;
-    gap: 7px;
-    justify-content: center;
-    margin-top: 12px;
-    flex-wrap: wrap;
-  }
-  .quick button {
-    border: none;
-    background: var(--chip);
-    color: var(--muted);
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 7px 14px;
-    border-radius: 999px;
-    cursor: pointer;
-  }
-  .quick button.on {
-    background: var(--accent);
-    color: var(--accent-fg);
-    color: white;
-  }
-  .preview {
-    background: var(--bg);
-    border-radius: 16px;
-    padding: 16px;
-    text-align: center;
-    margin: 18px 0;
-  }
-  .preview .pk {
-    font-size: 30px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
-  .preview .pk small {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--subtle);
-  }
-  .preview .pm {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--muted);
-    margin-top: 6px;
-  }
-  .sheet-actions { display: flex; gap: 10px; }
-  .sheet-actions button {
-    flex: 1 1 0;
-    border: none;
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 600;
-    padding: 15px;
-    border-radius: 14px;
-    cursor: pointer;
-  }
-  .sheet-actions .cancel { background: var(--chip); color: var(--muted); }
-  .sheet-actions .confirm {
-    background: var(--cta);
-    color: var(--cta-fg);
-    box-shadow: 0 10px 24px var(--cta-shadow);
-  }
-
-  /* === MEAL ITEM EDIT BUTTON + SWIPE === */
-  .meal-item {
-    position: relative;
-    overflow: hidden;
-    touch-action: pan-y;
-  }
-  .mi-actions {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-  }
-  .mi-edit, .mi-rm {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--subtle);
-    transition: background 0.15s, color 0.15s;
-  }
-  .mi-edit:hover, .mi-edit:active { background: var(--accent-soft); color: var(--accent); }
-  .mi-rm:hover, .mi-rm:active { background: var(--rm-bg); color: var(--rm-fg); }
-  .mi-swipe-bg {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 18px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-    color: var(--accent);
-    background: var(--accent-soft);
-    border-radius: 12px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.15s;
-  }
-  .meal-item.swiping .mi-swipe-bg { opacity: 1; }
-  .mi-content {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    background: transparent;
-    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .meal-item.dragging .mi-content { transition: none; }
-
-  /* === WORKOUT CARD === */
-  .workout-card {
-    background: var(--surface);
-    border-radius: 18px;
-    padding: 16px 18px;
-    margin-top: 18px;
-    box-shadow: var(--shadow-xs);
-  }
-  .wo-toggle-row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    cursor: pointer;
-  }
-  .wo-toggle {
-    position: relative;
-    flex-shrink: 0;
-    width: 44px;
-    height: 26px;
-    background: var(--chip);
-    border-radius: 999px;
-    transition: background 0.18s;
-  }
-  .wo-toggle input { position: absolute; opacity: 0; pointer-events: none; }
-  .wo-knob {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .wo-toggle.on { background: var(--accent); }
-  .wo-toggle.on .wo-knob { transform: translateX(18px); }
-  .wo-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    line-height: 1.2;
-  }
-  .wo-sub {
-    display: block;
-    font-size: 11.5px;
-    font-weight: 500;
-    color: var(--subtle);
-    margin-top: 2px;
-  }
-  .workout-body {
-    margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px solid var(--hair);
-    display: none;
-  }
-  .workout-body.show { display: block; }
-  .wo-preset-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .wo-preset {
-    flex: 1;
-    background: var(--bg);
-    border: 1.5px solid var(--hair);
-    color: var(--muted);
-    font-family: inherit;
-    font-size: 12.5px;
-    font-weight: 600;
-    padding: 9px 10px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: border-color 0.15s, background 0.15s, color 0.15s;
-  }
-  .wo-preset:hover, .wo-preset:active {
-    border-color: var(--accent);
-    background: var(--accent-soft);
-    color: var(--accent);
-  }
-  .wo-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .wo-ex {
-    background: var(--bg);
-    border-radius: 12px;
-    padding: 10px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .wo-ex-head {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .wo-ex-name {
-    flex: 1;
-    font-family: inherit;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--text);
-    background: transparent;
-    border: none;
-    outline: none;
-    padding: 2px 0;
-    width: 100%;
-  }
-  .wo-ex-note {
-    font-family: inherit;
-    font-size: 11px;
-    color: var(--subtle);
-    background: transparent;
-    border: none;
-    outline: none;
-    padding: 0;
-    width: 100%;
-    resize: none;
-  }
-  .wo-ex-rm {
-    flex-shrink: 0;
-    width: 26px;
-    height: 26px;
-    border-radius: 7px;
-    border: none;
-    background: transparent;
-    color: var(--subtle);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .wo-ex-rm:hover, .wo-ex-rm:active { background: var(--rm-bg); color: var(--rm-fg); }
-  .wo-ex-fields {
-    display: grid;
-    grid-template-columns: 1fr 1.4fr;
-    gap: 8px;
-  }
-  .wo-field {
-    background: var(--surface);
-    border: 1px solid var(--hair);
-    border-radius: 8px;
-    padding: 7px 9px;
-    display: flex;
-    flex-direction: column;
-  }
-  .wo-field label {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--subtle);
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    margin-bottom: 2px;
-  }
-  .wo-field input {
-    font-family: inherit;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--text);
-    background: transparent;
-    border: none;
-    outline: none;
-    padding: 0;
-    width: 100%;
-  }
-  .wo-add {
-    width: 100%;
-    margin-top: 10px;
-    background: var(--accent-soft);
-    border: 1.5px dashed var(--accent);
-    color: var(--accent);
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 11px;
-    border-radius: 12px;
-    cursor: pointer;
-  }
-  .wo-export {
-    width: 100%;
-    margin-top: 8px;
-    background: var(--cta);
-    color: var(--cta-fg);
-    border: none;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 12px;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 4px 12px var(--cta-shadow);
-  }
-  .wo-empty {
-    text-align: center;
-    font-size: 12px;
-    color: var(--subtle);
-    padding: 14px 0;
-  }
-
-  /* === RECIPE SHEET === */
-  .recipe-ingredients {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 6px;
-  }
-  .ri-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 9px 12px;
-  }
-  .ri-info { flex: 1; min-width: 0; }
-  .ri-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .ri-meta {
-    font-size: 11px;
-    color: var(--subtle);
-    margin-top: 1px;
-  }
-  .ri-kcal {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--accent);
-    flex-shrink: 0;
-  }
-  .ri-rm {
-    flex-shrink: 0;
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
-    border: none;
-    background: transparent;
-    color: var(--subtle);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .ri-rm:hover, .ri-rm:active { background: var(--rm-bg); color: var(--rm-fg); }
-  .recipe-totals {
-    background: var(--accent-soft);
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent);
-    text-align: center;
-  }
-  .recipe-empty {
-    text-align: center;
-    font-size: 12px;
-    color: var(--subtle);
-    padding: 14px 8px;
-    background: var(--bg);
-    border-radius: 10px;
-  }
-  textarea#recipeDesc {
-    resize: vertical;
-    min-height: 64px;
-    font-family: inherit;
-    font-size: 14px;
-    color: var(--text);
-    background: transparent;
-    border: none;
-    outline: none;
-    width: 100%;
-    line-height: 1.4;
-  }
-
-  /* === INGREDIENT PICKER OVERLAY === */
-  .picker-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(11,13,20,0.5);
-    z-index: 9000;
-    display: none;
-    align-items: flex-end;
-    justify-content: center;
-  }
-  .picker-overlay.show { display: flex; }
-  .picker-sheet {
-    background: var(--surface);
-    width: 100%;
-    max-width: 480px;
-    max-height: 80vh;
-    border-radius: 24px 24px 0 0;
-    padding: 14px 18px 20px;
-    display: flex;
-    flex-direction: column;
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
-  }
-  .picker-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .picker-title { font-size: 16px; font-weight: 700; color: var(--text); }
-  .picker-close {
-    width: 30px; height: 30px; border-radius: 8px; border: none;
-    background: var(--chip); color: var(--muted); cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .picker-search {
-    background: var(--bg);
-    border: 1.5px solid var(--hair);
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 14px;
-    font-family: inherit;
-    outline: none;
-    margin-bottom: 8px;
-    width: 100%;
-  }
-  .picker-search:focus { border-color: var(--accent); }
-  .picker-list {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .pl-item {
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 10px 12px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: background 0.12s;
-  }
-  .pl-item:hover, .pl-item:active { background: var(--accent-soft); }
-  .pl-name {
-    flex: 1;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--text);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .pl-meta {
-    font-size: 11px;
-    color: var(--subtle);
-    flex-shrink: 0;
-  }
-  .pl-empty { text-align: center; color: var(--subtle); font-size: 12px; padding: 20px; }
-
-  /* === RECIPE BADGE === */
-  .pc-tag.pc-tag-recipe {
-    background: #FFF1D7;
-    color: #B66A00;
-  }
-  .mi-recipe-badge {
-    display: inline-block;
-    background: #FFF1D7;
-    color: #B66A00;
-    font-size: 9.5px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 5px;
-    margin-right: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    vertical-align: middle;
-  }
-  .add-recipe-chip {
-    background: var(--accent-soft) !important;
-    color: var(--accent) !important;
-    border: 1.5px dashed var(--accent) !important;
-  }
-  /* Daily targets */
-  .targets-card {
-    background: var(--surface);
-    border-radius: 18px;
-    padding: 12px 14px;
-    margin: 10px 16px 6px;
-    box-shadow: var(--shadow-xs);
-    border: 1px solid var(--hair);
-  }
-  .targets-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    gap: 10px;
-    user-select: none;
-  }
-  .targets-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: 0.2px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .targets-title svg { color: var(--accent); }
-  .targets-toggle-icon {
-    width: 20px;
-    height: 20px;
-    color: var(--subtle);
-    transition: transform 0.2s;
-  }
-  .targets-card.open .targets-toggle-icon { transform: rotate(180deg); }
-  .targets-body { display: none; margin-top: 12px; }
-  .targets-card.open .targets-body { display: block; }
-  .targets-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-  .target-field {
-    background: var(--bg);
-    border: 1px solid var(--hair);
-    border-radius: 10px;
-    padding: 8px 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .target-field label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--subtle);
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    flex: 1;
-  }
-  .target-field input {
-    width: 70px;
-    border: none;
-    background: transparent;
-    outline: none;
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text);
-    text-align: right;
-  }
-  .target-field.kcal {
-    grid-column: 1 / -1;
-    background: var(--accent-soft);
-    border-color: var(--accent-soft);
-  }
-  .target-field.kcal label { color: var(--accent); }
-  /* Status colors for calendar cells */
-  .cal-cell.status-red { background: #F9DDE0; }
-  .cal-cell.status-red .k { color: #C13B4D; }
-  .cal-cell.status-orange { background: #FBE8D2; }
-  .cal-cell.status-orange .k { color: #C76A1E; }
-  .cal-cell.status-green { background: #DCF1E4; }
-  .cal-cell.status-green .k { color: #2EAA5C; }
-  .cal-cell.today.status-red { box-shadow: inset 0 0 0 2px #C13B4D; }
-  .cal-cell.today.status-orange { box-shadow: inset 0 0 0 2px #C76A1E; }
-  .cal-cell.today.status-green { box-shadow: inset 0 0 0 2px #2EAA5C; }
-  .avg-status-red { color: #C13B4D !important; }
-  .avg-status-orange { color: #C76A1E !important; }
-  .avg-status-green { color: #2EAA5C !important; }
-  /* Macro tiles + hero kcal status */
-  .macro.status-red { background: #F9DDE0; }
-  .macro.status-red .mv { color: #C13B4D; }
-  .macro.status-orange { background: #FBE8D2; }
-  .macro.status-orange .mv { color: #C76A1E; }
-  .macro.status-green { background: #DCF1E4; }
-  .macro.status-green .mv { color: #2EAA5C; }
-  .kcal-big.status-red { color: #C13B4D; }
-  .kcal-big.status-orange { color: #C76A1E; }
-  .kcal-big.status-green { color: #2EAA5C; }
-  /* Monthly average macros card */
-  .avg-macros {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin: 6px 16px 4px;
-  }
-  .avg-macro {
-    background: var(--surface);
-    border-radius: 14px;
-    padding: 10px 4px;
-    text-align: center;
-    box-shadow: var(--shadow-xs);
-  }
-  .avg-macro .v {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text);
-  }
-  .avg-macro .v small { font-size: 10px; font-weight: 500; color: var(--subtle); }
-  .avg-macro .n {
-    font-size: 9.5px;
-    font-weight: 600;
-    color: var(--subtle);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin-top: 2px;
-  }
-  .avg-macro.status-red { background: #F9DDE0; }
-  .avg-macro.status-red .v { color: #C13B4D; }
-  .avg-macro.status-orange { background: #FBE8D2; }
-  .avg-macro.status-orange .v { color: #C76A1E; }
-  .avg-macro.status-green { background: #DCF1E4; }
-  .avg-macro.status-green .v { color: #2EAA5C; }
-  /* "Brakuje" hints */
-  .diff-hint {
-    display: block;
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--subtle);
-    margin-top: 2px;
-    letter-spacing: 0.02em;
-    text-transform: none;
-  }
-  .diff-hint.over { color: #C76A1E; }
-  .diff-hint.done { color: #2EAA5C; }
-  .kcal-diff {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--subtle);
-    margin-top: 6px;
-    letter-spacing: 0.02em;
-  }
-  .kcal-diff.over { color: #C76A1E; }
-  .kcal-diff.done { color: #2EAA5C; }
-  /* Calendar avg "remaining" line */
-  .avg-diff {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--subtle);
-    margin-top: 2px;
-  }
-  .avg-diff.over { color: #C76A1E; }
-  .avg-diff.done { color: #2EAA5C; }
-</style>
 </head>
 <body>
 <div id="app">
@@ -1669,18 +25,6 @@
         <span class="year" id="calYear"></span>
       </div>
       <div class="cal-nav">
-        <button id="exportCsvBtn" class="accent" aria-label="Eksport diety CSV" title="Eksport diety CSV">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        </button>
-        <button id="exportWoCsvBtn" class="accent" aria-label="Eksport treningów CSV" title="Eksport treningów CSV">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h2v14H6zM16 5h2v14h-2zM4 9h2v6H4zM18 9h2v6h-2zM8 12h8"/></svg>
-        </button>
-        <button id="importCsvBtn" class="accent" aria-label="Import CSV / backup" title="Import CSV lub backup JSON">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        </button>
-        <button id="backupBtn" class="accent" aria-label="Backup wszystkich danych" title="Backup (zapisz pełną kopię)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        </button>
         <input type="file" id="csvFileInput" accept=".csv,text/csv,.json,application/json" multiple style="display:none;">
         <button id="prevMonth" aria-label="Poprzedni miesiąc">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -1694,46 +38,6 @@
       <div>Pn</div><div>Wt</div><div>Śr</div><div>Cz</div><div>Pt</div><div>Sb</div><div>Nd</div>
     </div>
     <div class="cal-grid" id="calGrid"></div>
-
-    <!-- DAILY TARGETS -->
-    <div class="targets-card" id="targetsCard">
-      <div class="targets-head" id="targetsHead">
-        <div class="targets-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-          Dzienne cele
-        </div>
-        <svg class="targets-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </div>
-      <div class="targets-body">
-        <div class="targets-grid">
-          <div class="target-field kcal">
-            <label>Kalorie</label>
-            <input type="number" id="tgtKcal" inputmode="numeric" min="0" placeholder="2000">
-            <small style="color:var(--subtle); font-size:11px;">kcal</small>
-          </div>
-          <div class="target-field">
-            <label>Białko</label>
-            <input type="number" id="tgtProtein" inputmode="numeric" min="0" placeholder="0">
-            <small style="color:var(--subtle); font-size:11px;">g</small>
-          </div>
-          <div class="target-field">
-            <label>Węgle</label>
-            <input type="number" id="tgtCarbs" inputmode="numeric" min="0" placeholder="0">
-            <small style="color:var(--subtle); font-size:11px;">g</small>
-          </div>
-          <div class="target-field">
-            <label>Tłuszcze</label>
-            <input type="number" id="tgtFat" inputmode="numeric" min="0" placeholder="0">
-            <small style="color:var(--subtle); font-size:11px;">g</small>
-          </div>
-          <div class="target-field">
-            <label>Błonnik</label>
-            <input type="number" id="tgtFiber" inputmode="numeric" min="0" placeholder="0">
-            <small style="color:var(--subtle); font-size:11px;">g</small>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <div class="cal-foot">
       <div class="cal-summary">
@@ -1768,6 +72,78 @@
         <div class="v"><span id="avgFi">0</span><small> g</small></div>
         <div class="n">Błonnik</div>
         <div class="diff-hint" id="avgFiDiff"></div>
+      </div>
+    </div>
+
+    <button class="settings-btn" id="openSettings" aria-label="Cele i dane">
+      <span class="si">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+      </span>
+      <span class="stxt">Cele i dane</span>
+      <span class="schev">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </span>
+    </button>
+  </div>
+
+  <!-- SETTINGS SHEET: Cele i dane -->
+  <div class="sheet-dim" id="settingsDim"></div>
+  <div class="sheet settings-sheet" id="settingsSheet" role="dialog" aria-labelledby="settingsTitle">
+    <div class="grab"></div>
+    <div class="s-h">
+      <div class="st" id="settingsTitle">Cele i dane</div>
+      <div class="ss">Dzienne cele oraz eksport / kopia</div>
+    </div>
+
+    <div class="seg">
+      <div class="fl">Dzienny cel</div>
+      <div class="target-kcal">
+        <span class="l">Kalorie</span>
+        <span class="v"><input type="number" id="tgtKcal" inputmode="numeric" min="0" placeholder="2000"><small>kcal</small></span>
+      </div>
+      <div class="tg-grid">
+        <div class="tg">
+          <span class="l">Białko</span>
+          <span class="v"><input type="number" id="tgtProtein" inputmode="numeric" min="0" placeholder="0"><small>g</small></span>
+        </div>
+        <div class="tg">
+          <span class="l">Węgle</span>
+          <span class="v"><input type="number" id="tgtCarbs" inputmode="numeric" min="0" placeholder="0"><small>g</small></span>
+        </div>
+        <div class="tg">
+          <span class="l">Tłuszcze</span>
+          <span class="v"><input type="number" id="tgtFat" inputmode="numeric" min="0" placeholder="0"><small>g</small></span>
+        </div>
+        <div class="tg">
+          <span class="l">Błonnik</span>
+          <span class="v"><input type="number" id="tgtFiber" inputmode="numeric" min="0" placeholder="0"><small>g</small></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="seg" style="margin-bottom:0;">
+      <div class="fl">Dane</div>
+      <div class="data-list">
+        <button class="data-row" id="exportCsvBtn" type="button">
+          <span class="di"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+          <span class="dt"><span class="dn">Eksport diety (CSV)</span><span class="ds">Wszystkie dni do arkusza</span></span>
+          <span class="dchev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span>
+        </button>
+        <button class="data-row" id="exportWoCsvBtn" type="button">
+          <span class="di"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h2v14H6zM16 5h2v14h-2zM4 9h2v6H4zM18 9h2v6h-2zM8 12h8"/></svg></span>
+          <span class="dt"><span class="dn">Eksport treningów (CSV)</span><span class="ds">Ćwiczenia, serie, obciążenia</span></span>
+          <span class="dchev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span>
+        </button>
+        <button class="data-row" id="importCsvBtn" type="button">
+          <span class="di"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+          <span class="dt"><span class="dn">Import CSV / backup</span><span class="ds">Dodaj dane z pliku</span></span>
+          <span class="dchev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span>
+        </button>
+        <button class="data-row" id="backupBtn" type="button">
+          <span class="di"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></span>
+          <span class="dt"><span class="dn">Backup wszystkiego</span><span class="ds">Pełna kopia do przeniesienia</span></span>
+          <span class="dchev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span>
+        </button>
       </div>
     </div>
   </div>
@@ -1844,10 +220,10 @@
             Tylko Lidl
           </button>
           <button class="filter-chip add-custom-chip" id="addCustomChip" title="Dodaj własny produkt">
-            + Własny produkt
+            + Produkt
           </button>
           <button class="filter-chip add-recipe-chip" id="addRecipeChip" title="Stwórz obiad/przepis">
-            + Obiad/Przepis
+            + Przepis
           </button>
         </div>
         <div class="search-hint" id="searchHint">Podpowiedzi</div>
@@ -2215,8 +591,13 @@ function dayTotals(items) {
 
 function showView(name) {
   ['viewCalendar','viewDay'].forEach(v => $(v).classList.add('hidden'));
-  $('view' + name).classList.remove('hidden');
-  $('view' + name).scrollTop = 0;
+  const el = $('view' + name);
+  el.classList.remove('hidden');
+  // Re-trigger CSS animations on view enter
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = '';
+  el.scrollTop = 0;
 }
 
 // === KALENDARZ ===
@@ -2284,7 +665,7 @@ function renderCalendar() {
   }
   setDiffEl('avgDiff', daysWith ? avgKcal : 0, state.targets.kcal, 'kcal / dzień');
 
-  $('calGrid').innerHTML = cells.map(c => {
+  $('calGrid').innerHTML = cells.map((c, i) => {
     const key = dateKey(c.y, c.m, c.d);
     const items = state.data[key];
     const kcal = items && items.length ? Math.round(dayTotals(items).kcal) : 0;
@@ -2296,7 +677,7 @@ function renderCalendar() {
       (!c.other && key === today) ? 'today' : '',
       status ? ('status-' + status) : '',
     ].filter(Boolean).join(' ');
-    return `<button class="${cls}" data-key="${key}" data-other="${c.other}">
+    return `<button class="${cls}" style="--i:${i}" data-key="${key}" data-other="${c.other}">
       <span class="d">${c.d}</span>
       ${kcal > 0 && !c.other ? `<span class="k">${fmtNum(kcal)}</span>` : ''}
     </button>`;
@@ -2336,9 +717,15 @@ function openDay(date) {
 function renderDay() {
   const items = getDay(state.currentDate);
   const t = dayTotals(items);
-  $('totalCal').textContent = fmtNum(Math.round(t.kcal));
-  // kcal big status
   const totalCalEl = $('totalCal');
+  const newVal = fmtNum(Math.round(t.kcal));
+  if (totalCalEl.textContent !== newVal) {
+    totalCalEl.textContent = newVal;
+    totalCalEl.classList.remove('bump');
+    void totalCalEl.offsetWidth;
+    totalCalEl.classList.add('bump');
+  }
+  // kcal big status
   totalCalEl.classList.remove('status-red','status-orange','status-green');
   if (t.kcal > 0) {
     const st = statusForRatio(t.kcal, state.targets.kcal);
@@ -2397,7 +784,7 @@ function renderDay() {
     const list = groups[mt.id];
     const kcal = list.reduce((s, it) => s + it.kcal, 0);
     const body = list.length
-      ? list.map(it => {
+      ? list.map((it, ii) => {
           const isRecipe = !!it._fromRecipe;
           const ingNames = (it._ingredients || []).map(x => x.name).filter(Boolean);
           const metaSuffix = isRecipe && ingNames.length
@@ -2407,7 +794,7 @@ function renderDay() {
             ? '<span class="mi-recipe-badge" title="Z przepisu">Przepis</span>'
             : '';
           return `
-          <div class="meal-item" data-idx="${it._idx}" data-meal="${mt.id}">
+          <div class="meal-item" style="--i:${ii}" data-idx="${it._idx}" data-meal="${mt.id}">
             <div class="mi-swipe-bg">
               <span>← Poprzedni posiłek</span>
               <span>Następny posiłek →</span>
@@ -2429,17 +816,14 @@ function renderDay() {
             </div>
           </div>`;
         }).join('')
-      : `<div class="empty-meal">Brak produktów</div>`;
+      : `<div class="meal-empty">Brak produktów</div>`;
     return `
-      <div class="meal-group">
-        <div class="meal-head">
-          <div class="mh-l">
-            <span class="mh-dot"></span>
-            <span class="mh-name">${mt.label}</span>
-          </div>
-          <span class="mh-kcal">${fmtNum(Math.round(kcal))} kcal</span>
+      <div class="meal" data-meal="${mt.id}">
+        <div class="meal-h">
+          <span class="mh-name">${mt.label}</span>
+          <span class="mh-k">${fmtNum(Math.round(kcal))} kcal</span>
         </div>
-        <div class="meal-card">${body}</div>
+        ${body}
       </div>
     `;
   }).join('');
@@ -2559,6 +943,7 @@ function renderWorkout() {
   const w = getWorkout(state.currentDate);
   $('workoutEnabled').checked = !!w.enabled;
   $('workoutToggle').classList.toggle('on', !!w.enabled);
+  $('workoutCard').classList.toggle('active', !!w.enabled);
   $('workoutBody').classList.toggle('show', !!w.enabled);
 
   const list = $('workoutList');
@@ -3934,13 +2319,16 @@ document.querySelectorAll('#mealPicker button').forEach(btn => {
   });
 });
 
-// CSV export buttons
-$('exportCsvBtn').addEventListener('click', exportAllCsv);
-$('exportWoCsvBtn').addEventListener('click', exportAllWorkoutsCsv);
-$('backupBtn').addEventListener('click', exportBackup);
+// CSV export buttons (also dismiss the Cele i dane sheet after the action)
+function withSheetClose(fn) {
+  return (...args) => { try { fn(...args); } finally { closeSettingsSheet(); } };
+}
+$('exportCsvBtn').addEventListener('click', withSheetClose(exportAllCsv));
+$('exportWoCsvBtn').addEventListener('click', withSheetClose(exportAllWorkoutsCsv));
+$('backupBtn').addEventListener('click', withSheetClose(exportBackup));
 
 // CSV import
-$('importCsvBtn').addEventListener('click', () => $('csvFileInput').click());
+$('importCsvBtn').addEventListener('click', () => { closeSettingsSheet(); setTimeout(() => $('csvFileInput').click(), 320); });
 $('csvFileInput').addEventListener('change', (e) => {
   handleCsvImport(e.target.files);
   e.target.value = ''; // reset, żeby ten sam plik dało się ponownie wybrać
@@ -4047,9 +2435,17 @@ bindTargetInput('tgtProtein', 'protein');
 bindTargetInput('tgtCarbs', 'carbs');
 bindTargetInput('tgtFat', 'fat');
 bindTargetInput('tgtFiber', 'fiber');
-$('targetsHead').addEventListener('click', () => {
-  $('targetsCard').classList.toggle('open');
-});
+// Settings sheet: Cele i dane
+function openSettingsSheet() {
+  $('settingsDim').classList.add('show');
+  requestAnimationFrame(() => $('settingsSheet').classList.add('show'));
+}
+function closeSettingsSheet() {
+  $('settingsSheet').classList.remove('show');
+  setTimeout(() => $('settingsDim').classList.remove('show'), 280);
+}
+$('openSettings').addEventListener('click', openSettingsSheet);
+$('settingsDim').addEventListener('click', closeSettingsSheet);
 loadTargetsUI();
 
 // === INIT ===
