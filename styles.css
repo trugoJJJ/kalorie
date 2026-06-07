@@ -920,6 +920,18 @@ body::after {
   width: 100% !important; height: 100% !important; object-fit: cover !important;
   display: block; border-radius: inherit;
 }
+/* Suppress html5-qrcode's built-in UI — only our .scanner-frame should show */
+#scannerReader #qr-shaded-region,
+#scannerReader > div[style*="border"],
+#scannerReader > img[alt*="Info"],
+#scannerReader > a,
+#scannerReader > div > img {
+  display: none !important;
+}
+#scannerReader * {
+  border: 0 !important; box-shadow: none !important;
+}
+#scannerReader video, #scannerReader canvas { border-radius: inherit !important; }
 #scannerReader::before {
   content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2;
   background:
