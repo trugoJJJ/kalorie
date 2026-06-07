@@ -539,19 +539,25 @@ function statusForRatio(actual, target) {
   if (dist <= 0.25) return 'orange';  // within ±25% → getting closer
   return 'red';                        // > ±25% away
 }
-function diffInfo(actual, target, unit) {
+function diffInfo(actual, target, unit, compact) {
   if (!target || target <= 0) return { text: '', cls: '' };
   const diff = target - actual;
   const abs = Math.round(Math.abs(diff));
   const u = unit || '';
-  if (Math.abs(diff) < (target * 0.02)) return { text: 'cel osiągnięty', cls: 'done' };
-  if (diff > 0) return { text: `brakuje ${fmtNum(abs)} ${u}`.trim(), cls: '' };
-  return { text: `+${fmtNum(abs)} ${u} ponad cel`.trim(), cls: 'over' };
+  if (Math.abs(diff) < (target * 0.02)) return { text: compact ? '✓ cel' : 'cel osiągnięty', cls: 'done' };
+  if (diff > 0) {
+    return compact
+      ? { text: `−${fmtNum(abs)} ${u}`.trim(), cls: '' }
+      : { text: `brakuje ${fmtNum(abs)} ${u}`.trim(), cls: '' };
+  }
+  return compact
+    ? { text: `+${fmtNum(abs)} ${u}`.trim(), cls: 'over' }
+    : { text: `+${fmtNum(abs)} ${u} ponad cel`.trim(), cls: 'over' };
 }
-function setDiffEl(elId, actual, target, unit) {
+function setDiffEl(elId, actual, target, unit, compact) {
   const el = $(elId);
   if (!el) return;
-  const info = diffInfo(actual, target, unit);
+  const info = diffInfo(actual, target, unit, compact);
   el.textContent = info.text;
   el.classList.remove('over', 'done');
   if (info.cls) el.classList.add(info.cls);
@@ -649,7 +655,7 @@ function renderCalendar() {
       const st = statusForRatio(v, target);
       if (st) card.classList.add('status-' + st);
     }
-    setDiffEl(diffId, daysWith ? v : 0, target, 'g');
+    setDiffEl(diffId, daysWith ? v : 0, target, 'g', true);
   };
   setAvgMacro('avgMacroP', 'avgP', 'avgPDiff', sumP, state.targets.protein);
   setAvgMacro('avgMacroC', 'avgC', 'avgCDiff', sumC, state.targets.carbs);
@@ -751,10 +757,10 @@ function renderDay() {
   if (macroTiles[3]) setMacroStatus(macroTiles[3], t.fiber, state.targets.fiber);
   // diff hints
   setDiffEl('kcalDiff', t.kcal, state.targets.kcal, 'kcal');
-  setDiffEl('mPDiff', t.protein, state.targets.protein, 'g');
-  setDiffEl('mCDiff', t.carbs, state.targets.carbs, 'g');
-  setDiffEl('mFDiff', t.fat, state.targets.fat, 'g');
-  setDiffEl('mFiDiff', t.fiber, state.targets.fiber, 'g');
+  setDiffEl('mPDiff', t.protein, state.targets.protein, 'g', true);
+  setDiffEl('mCDiff', t.carbs, state.targets.carbs, 'g', true);
+  setDiffEl('mFDiff', t.fat, state.targets.fat, 'g', true);
+  setDiffEl('mFiDiff', t.fiber, state.targets.fiber, 'g', true);
   // legend
   $('legP').textContent = `${t.protein.toFixed(0)} g`;
   $('legC').textContent = `${t.carbs.toFixed(0)} g`;
