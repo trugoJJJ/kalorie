@@ -742,6 +742,44 @@ body::after {
   border: none; background: transparent; outline: none; width: 100%; color: var(--ink); padding: 0;
 }
 
+/* ===== POWTÓRZENIA W SERIACH ===== */
+.wo-reps {
+  margin-top: 10px;
+  animation: view-in var(--t-base) var(--ease) both;
+}
+.wo-reps-label {
+  font-size: 9.5px; font-weight: 700; color: var(--subtle);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  display: block; margin: 0 2px 6px;
+}
+.wo-reps-row {
+  display: grid; gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(54px, 1fr));
+}
+.wo-rep {
+  display: flex; flex-direction: column; align-items: stretch;
+  background: var(--paper); border-radius: 11px;
+  border: 1.5px solid var(--hair-soft);
+  padding: 6px 6px 7px; min-width: 0;
+  transition: border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.wo-rep:focus-within { border-color: var(--lime); transform: translateY(-1px); }
+.wo-rep-n {
+  font-size: 9px; font-weight: 800; color: var(--subtle);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  text-align: center; margin-bottom: 2px;
+  font-feature-settings: "tnum" 1;
+}
+.wo-rep input {
+  font-family: 'Unbounded', 'Space Grotesk', sans-serif;
+  font-size: 14.5px; font-weight: 700;
+  border: none; background: transparent; outline: none;
+  width: 100%; color: var(--ink); padding: 0;
+  text-align: center;
+  font-feature-settings: "tnum" 1;
+}
+.wo-rep input::placeholder { color: var(--faint); font-weight: 600; }
+
 .wo-add {
   width: 100%; margin-top: 14px; background: transparent; border: 2px dashed var(--lime-deep);
   color: var(--accent-deep); font-family: inherit; font-size: 13.5px; font-weight: 700;
@@ -1138,38 +1176,18 @@ body::after {
 .picker-row:last-child, .pl:last-child { border-bottom: none; }
 .picker-row:active, .pl:active { background: var(--accent-soft); }
 
-/* ===== „Z DZIŚ" — przypisywanie produktów z innych posiłków ===== */
-.meal-copy {
-  display: inline-flex; align-items: center; gap: 8px;
-  margin: 12px 0 2px; padding: 9px 14px;
-  background: var(--accent-soft); color: var(--accent-deep);
-  border: 1.5px dashed var(--lime-deep); border-radius: 14px;
-  font-family: inherit; font-size: 12.5px; font-weight: 700;
-  letter-spacing: 0.01em; cursor: pointer;
-  transition: background var(--t-fast) var(--ease), transform var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+/* ===== „Z DZIŚ" — wybór składników do przepisu ===== */
+.recipe-add-row {
+  display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 8px;
 }
-.meal-copy:hover { background: var(--lime); border-color: var(--lime); color: var(--ink); }
-.meal-copy:active { transform: scale(0.96); }
-.meal-copy svg { flex: 0 0 auto; }
-.meal-copy-count {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-width: 18px; height: 18px; padding: 0 5px;
-  background: var(--ink); color: var(--lime);
-  border-radius: 999px; font-size: 10.5px; font-weight: 800;
-  font-feature-settings: "tnum" 1;
+.wo-add.alt {
+  background: var(--ink); color: var(--lime); border-color: var(--ink);
 }
-
-.copyfromday-mode {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;
+.wo-add.alt:hover { background: #0E1D14; }
+.picker-sub {
+  font-size: 12.5px; color: var(--muted); margin: -4px 0 12px;
+  line-height: 1.45;
 }
-.copyfromday-mode button {
-  border: 2px solid var(--hair); background: transparent; color: var(--muted);
-  font-family: inherit; font-size: 12.5px; font-weight: 700;
-  padding: 11px 6px; border-radius: 13px; cursor: pointer;
-  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
-}
-.copyfromday-mode button:active { transform: scale(0.96); }
-.copyfromday-mode button.on { background: var(--ink); color: var(--lime); border-color: var(--ink); }
 
 .copyfromday-list {
   flex: 1; overflow-y: auto; padding: 2px;
